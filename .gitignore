@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Project-specific
+**/__pycache__
+/.idea
+pickleFiles/
+node_modules
+
+
 # User-specific files
 *.rsuser
 *.suo
