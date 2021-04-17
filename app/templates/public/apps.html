@@ -1,0 +1,80 @@
+{% extends "public/templates/public_template.html" %}
+
+{% block title %}Basic Visualizations{% endblock %}
+
+{% block main %}
+<div id="viscontainer" class="container-fluid">
+    <div id="above-vis">
+
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <!-- <h1>Basic Visualizations</h1> -->
+                <!-- onclick="display_all_app_ids();" -->
+                <!-- <button class="btn btn-primary" id="display-vis">vis</button> -->
+                <!-- <hr> -->
+
+            </div>
+        </div>
+    </div>
+    <div class="row" >
+        <!-- margins are managed by d3. gutter = horizontal padding on columns -->
+        <div class="col-md-8">
+           <div class="row" id="visRow">
+        
+            <!-- apps area -- the col segments are relative to the enclosing div. I tested which col size fits the data best.-->
+        <div id="app" class="col-md-5">
+            <div id="app-menu" class="row view-menu no-gutters">
+                <!-- <button class="btn btn-primary" id="test">test</button> -->
+            </div>
+            <div id="app-view" class="row view-menu no-gutters"></div>
+        </div>
+
+        <!-- lib area -->
+        <div id="lib" class="col-md-3">
+            <div id="lib-menu" class="row view-menu no-gutters">
+                <!-- <button class="btn btn-primary">test</button>
+                <div class="dropdown show">
+                    <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        color
+                    </a>
+
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" href="#">number of affected applications</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </div> -->
+            </div>
+            <div id="lib-view" class="row view-menu no-gutters"></div>
+        </div>
+
+        <!-- vul area -->
+        <div id="vul" class="col-md-2">
+            <div id="vul-menu" class="row view-menu no-gutters">
+                <!-- <button class="btn btn-primary">test</button> -->
+            </div>
+            <div id="vul-view" class="row view-menu no-gutters"></div>
+        </div>
+
+           </div>
+
+        </div>
+        <div class="col-md-4" >
+            <div id="filterSection" class="row no-gutters" >
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}
+
+{% block script %}
+{% include "includes/scripts.html" %}
+
+
+<!-- is it a module?? type='module'-->
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock script %}

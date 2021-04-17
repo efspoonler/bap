@@ -1,0 +1,33 @@
+{% extends "public/templates/public_template.html" %}
+
+{% block title %}Workspace{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>workspace</h1>
+      <hr>
+    </div>
+  </div>
+</div>
+
+    <form action="/workspace" method="POST">
+      <div class="form-group">
+        <label>workspace Token</label>
+        <input type="text" class="form-control" id="workspace_token" name="workspace_token" placeholder="input token" required>
+      </div>
+<button type="submit" class="btn btn-primary">send token</button>
+    {% if feedback %}
+<p class="text-danger float-right">{{ feedback }}</p>
+{% endif %}
+
+    </form>
+
+
+
+
+
+
+{% endblock main %}

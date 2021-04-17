@@ -1,0 +1,4 @@
+These apps also rise errors in eclipse-steady!
+/data/apps/vulndeps/<mvnGroup>/<artifact>/<version> for org.eclipse.mylyn.docs/org.eclipse.mylyn.docs.epub.core/4.0.7-SNAPSHOT
+/data/apps/vulndeps/<mvnGroup>/<artifact>/<version> for org.nd4j/nd4j-tensorflow/1.0.0-SNAPSHOT
+statuscode 400 for org.eclipse.mylyn.docs/org.eclipse.mylyn.docs.epub.ant/4.0.7-SNAPSHOT

@@ -1,0 +1,4 @@
+received a new database:
+1. create a new version of 'picklefile_all_apps_with_deps_and_vulndeps'. (could be done faster by using threads!)
+2. create a new app_forest, based on the file created in step 1.
+3. creat data for the different views: visualization_libraries, visualization_applications, visualization_vulnerabilities
