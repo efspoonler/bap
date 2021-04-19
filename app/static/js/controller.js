@@ -123,6 +123,11 @@ export default class Controller {
         DataWareHouse.applyNewFilter(params)
           .then((filteredData) => {
             this.models.forEach((model) => {
+              console.log('');
+              console.log('');
+              console.log(filteredData);
+              console.log('');
+              console.log('');
               model.updateData(filteredData[model.prefix]);
               model.redrawConnectedArtifacts();
             });
@@ -147,6 +152,7 @@ export default class Controller {
           .then((filteredData) => {
             this.models.forEach((model) => {
               model.updateData(filteredData[model.prefix]);
+              model.redrawConnectedArtifacts();
             });
           });
       });

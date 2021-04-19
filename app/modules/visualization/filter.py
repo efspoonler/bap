@@ -56,25 +56,30 @@ def run_filters_on_dataset(calling_model:str):
    # -- key == name of the function -- corresponds to the key inside the function_dict, which points to the coressponding function.
    # -- value == parameters -- are the parameters for the -- key -- function.
    for key, value in active_filters.items():
+     if not df.empty:
+        print(f'\n \n \n {df.empty} \n {not df.empty} \n')
         print(f'callingModel: {calling_model} -- function_name: {key} -- params: {value}')
         df_returned = filter_dict[key](calling_model, df, value) #This is where the magic happens.
         print(f'returnd from function_name: {key}')
         df = df_returned
-   
-   df = sort_df_by_column(calling_model, df, sortBy)
-   df = set_column_as_color(calling_model, df, color)
-   returnIds = []
-   # each view uses different columns as the id for their objects.
-   if modelId == 'app':
-      df.rename(columns = {'gav': 'id'}, inplace = True)
+   if not df.empty: 
+      print('alles nomal - df hat rows')
+      df = sort_df_by_column(calling_model, df, sortBy)
+      df = set_column_as_color(calling_model, df, color)
+      returnIds = []
+      # each view uses different columns as the id for their objects.
+      if modelId == 'app':
+         df.rename(columns = {'gav': 'id'}, inplace = True)
 
-   if modelId == 'lib':
-       df.rename(columns = {'libDigest': 'id'}, inplace = True)
+      if modelId == 'lib':
+          df.rename(columns = {'libDigest': 'id'}, inplace = True)
 
-   if modelId == 'vul':
-       df.rename(columns = {'cve': 'id'}, inplace = True)
-   
-   returnIds = df[['id', 'color']].to_dict(orient='records')
+      if modelId == 'vul':
+          df.rename(columns = {'cve': 'id'}, inplace = True)
+      
+      returnIds = df[['id', 'color']].to_dict(orient='records')
+   else:
+      returnIds = {}
    return returnIds
        
 
@@ -126,9 +131,10 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
 
       #print(select_indices)
       if select_indices: # we found matching rows with our Regex
-            df_ret = df_param.iloc[select_indices]
+         df_ret = df_param.loc[select_indices]
       else:
-           print(f'no app our lib contains this vulnerability version {myRegex} - seems like there is a Problem.')
+         df_ret = pd.DataFrame()
+         print(f'no app our lib contains this vulnerability version {myRegex} - seems like there is a Problem.')
   return df_ret
 
 
@@ -196,10 +202,11 @@ def get_artifacts_by_specific_cvssscore(calling_model, df_param, params):
                   select_indices.append(index)
 
     if select_indices: # we found matching rows with our Regex
-            df_ret = df_param.loc[select_indices] # Hier chenaged to loc    
+       df_ret = df_param.loc[select_indices] # Hier chenaged to loc    
 
-    else:
-           print(f'no app our lib contains this vulnerability version  - seems like there is a Problem.')
+    else:  
+       df_ret = pd.DataFrame() #empty dataframe 
+       print(f'no app our lib contains this vulnerability version  - seems like there is a Problem.')
 
   return df_ret
 
