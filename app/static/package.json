@@ -16,6 +16,7 @@
   "dependencies": {
     "bootstrap": "^4.5.3",
     "d3": "^6.3.0",
+    "d3-simple-slider": "^1.10.4",
     "jquery": "^3.5.1"
   }
 }

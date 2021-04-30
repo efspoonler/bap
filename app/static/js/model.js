@@ -84,7 +84,6 @@ class DataWareHouse extends Model {
         console.log(`Problem in model.js::loading initial data. Status code: ${response.status}`);
         return { error: `${response.status}` };
       }
-      console.log('got Data');
       return response.json();
     })();
   }
@@ -93,7 +92,6 @@ class DataWareHouse extends Model {
     return (async () => {
       const query = new URLSearchParams(filterObj);
       const queryString = query.toString();
-      console.log(queryString);
       const path = `/vis/filter/add?${queryString}`;
 
       const response = await fetch(path);
@@ -101,10 +99,10 @@ class DataWareHouse extends Model {
         console.log(`Problem in model.js::loading initial data. Status code: ${response.status}`);
         return { error: `${response.status}` };
       }
-      console.log('got Data');
       return response.json();
     })();
   }
+
   // static numbOfLoadedDataSets = 0;
 
   get name() {
@@ -113,6 +111,27 @@ class DataWareHouse extends Model {
 
   get prefix() {
     return this._prefix;
+  }
+
+  // this._data.visible contains the current data visible in the front-end.
+  applyRangeFilterToData(min, max) {
+    const selectedData = [];
+
+    let dMin = 'min_cvssScore';
+    let dMax = 'max_cvssScore';
+    if (this._prefix === 'vul') {
+      dMin = 'cvssScore';
+      dMax = 'cvssScore';
+    }
+    this._data.visibleData.forEach((d) => {
+      const dataMin = this._data.tooltip[d.id][dMin];
+      const dataMax = this._data.tooltip[d.id][dMax];
+
+      if (dataMin >= min && dataMax <= max) {
+        selectedData.push(d);
+      }
+    });
+    this.updateData(selectedData);
   }
 
   setConnected(connectedTo, elemIdArray, viewPrefix) {
@@ -136,11 +155,9 @@ class DataWareHouse extends Model {
     views.forEach((view) => {
       const connectedElems = Object.keys(this._data.connected[view]);
       connectedElems.forEach((key) => {
-        // console.log(this._data.connected[view][key]);
         updateArtifacts = updateArtifacts.concat(this._data.connected[view][key]);
       });
     });
-    // console.log(updateArtifacts);
     this.emit('conectedElemsChanged', [this._prefix, updateArtifacts]);
   }
 
@@ -175,7 +192,6 @@ class DataWareHouse extends Model {
     }
 
     this._data.intersection = intersection;
-    console.log(this._data);
     this.emit('conectedElemsChanged', [this._prefix, intersection]);
   }
 
@@ -208,8 +224,8 @@ class DataWareHouse extends Model {
     this.genericRequest(`${this._url}/init`)
       .then((jsonData) => {
         this._data.init = jsonData.data;
+        this._data.visibleData = this._data.init;
         this._data.tooltip = jsonData.tooltip;
-        console.log(this._data);
         this.dataSetLoaded = true;
         // DataWareHouse.numbOfLoadedDataSets += 1;
       });
@@ -235,9 +251,9 @@ class DataWareHouse extends Model {
     return [this._prefix, this.genericRequest(url)];
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async genericRequest(path) {
     const genericUrl = path; // create the url dynamically.
-    console.log(this);
     const response = await fetch(genericUrl);
     if (response.status !== 200) { // error handling with status code
       console.log(`Problem in model.js::loading initial data. Status code: ${response.status}`);
@@ -256,7 +272,6 @@ class DataWareHouse extends Model {
   }
 
   getintersection() {
-    console.log(this._data.intersection);
     this.emit('conectedElemsChanged', [this._prefix, this._data.intersection]);
     return this._data.intersection;
   }
@@ -267,7 +282,6 @@ class DataWareHouse extends Model {
 
   updateData(data) {
     this._data.visibleData = data;
-    console.log(this._data);
     this.emit('dataUpdate', [this._prefix, this._data.visibleData]);
   }
 }

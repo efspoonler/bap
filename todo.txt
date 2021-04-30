@@ -1,0 +1,9 @@
+- remove checkboxes -> always highlight intersection of elements.
+- add v3.1 to CvssVersion.
+
+
+- create an obj representing the dynamic filter settings in CVE BasseVectorFilter
+- permit selecting the same metric twice. Otherwise the latest metric will overwrite the values inside the active filter obj.
+- last button cannot be removed.
+
+

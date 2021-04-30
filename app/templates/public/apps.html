@@ -1,11 +1,6 @@
-{% extends "public/templates/public_template.html" %}
-
-{% block title %}Basic Visualizations{% endblock %}
-
-{% block main %}
+{% extends "public/templates/public_template.html" %} {% block title %}Basic Visualizations{% endblock %} {% block main %}
 <div id="viscontainer" class="container-fluid">
     <div id="above-vis">
-
 
         <div class="row">
             <div class="col-md-12">
@@ -18,23 +13,23 @@
             </div>
         </div>
     </div>
-    <div class="row" >
+    <div class="row">
         <!-- margins are managed by d3. gutter = horizontal padding on columns -->
         <div class="col-md-8">
-           <div class="row" id="visRow">
-        
-            <!-- apps area -- the col segments are relative to the enclosing div. I tested which col size fits the data best.-->
-        <div id="app" class="col-md-5">
-            <div id="app-menu" class="row view-menu no-gutters">
-                <!-- <button class="btn btn-primary" id="test">test</button> -->
-            </div>
-            <div id="app-view" class="row view-menu no-gutters"></div>
-        </div>
+            <div class="row" id="visRow">
 
-        <!-- lib area -->
-        <div id="lib" class="col-md-3">
-            <div id="lib-menu" class="row view-menu no-gutters">
-                <!-- <button class="btn btn-primary">test</button>
+                <!-- apps area -- the col segments are relative to the enclosing div. I tested which col size fits the data best.-->
+                <div id="app" class="col-md-5">
+                    <div id="app-menu" class="row view-menu no-gutters">
+                        <!-- <button class="btn btn-primary" id="test">test</button> -->
+                    </div>
+                    <div id="app-view" class="row view-menu no-gutters"></div>
+                </div>
+
+                <!-- lib area -->
+                <div id="lib" class="col-md-3">
+                    <div id="lib-menu" class="row view-menu no-gutters">
+                        <!-- <button class="btn btn-primary">test</button>
                 <div class="dropdown show">
                     <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -47,34 +42,108 @@
                         <a class="dropdown-item" href="#">Something else here</a>
                     </div>
                 </div> -->
+                    </div>
+                    <div id="lib-view" class="row view-menu no-gutters"></div>
+                </div>
+
+                <!-- vul area -->
+                <div id="vul" class="col-md-2">
+                    <div id="vul-menu" class="row view-menu no-gutters">
+                        <!-- <button class="btn btn-primary">test</button> -->
+                    </div>
+                    <div id="vul-view" class="row view-menu no-gutters"></div>
+                </div>
+
             </div>
-            <div id="lib-view" class="row view-menu no-gutters"></div>
-        </div>
-
-        <!-- vul area -->
-        <div id="vul" class="col-md-2">
-            <div id="vul-menu" class="row view-menu no-gutters">
-                <!-- <button class="btn btn-primary">test</button> -->
-            </div>
-            <div id="vul-view" class="row view-menu no-gutters"></div>
-        </div>
-
-           </div>
 
         </div>
-        <div class="col-md-4" >
-            <div id="filterSection" class="row no-gutters" >
+        <div class="col-md-4">
+            <div id="filterSection" class="row no-gutters" style="display:block">
             </div>
         </div>
     </div>
 </div>
 
-{% endblock main %}
-
-{% block script %}
-{% include "includes/scripts.html" %}
-
+{% endblock main %} {% block script %} {% include "includes/scripts.html" %}
 
 <!-- is it a module?? type='module'-->
 <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script id="template-dynamic-list" type="text/template">
+    <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown Example
+        <span class="caret"></span></button>
+    <ul class="dropdown-menu">
+        <!-- here goes th dynamic list -->
+    </ul>
+</script>
+
+<script id="template-dynamic-list-item" type="text/template">
+    <li>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id=%id% class='value-checkbox'>  %name%
+            </label>
+        </div>
+    </li>
+</script>
+
+<script id="template-radio-btn" type="text/template">
+    <div class="btn-group btn-group-toggle" data-toggle="buttons" id="radio-btn-group">
+        <label class="btn btn-secondary btn-sm version-toggle active">
+          <input type="radio" name="options" id="v2" autocomplete="off" checked> v2 
+        </label>
+        <label class="btn btn-sm btn-secondary version-toggle">
+          <input type="radio" name="options" id="v3" autocomplete="off"> v3 
+        </label>
+    </div>
+</script>
+
+<script id="template-metrics-v2" type="text/template">
+    <button class="btn btn-secondary dropdown-toggle select-metric btn-sm" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         Select a Metric 
+        </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+        <h6 class="dropdown-header">Exploitability Metrics</h6>
+        <button class="dropdown-item" type="button" id="av2">Access Vector (AV)</button>
+        <button class="dropdown-item" type="button" id="ac2">Access Complexity (AC)</button>
+        <button class="dropdown-item" type="button" id="au2">Authentication (Au) </button>
+        <hr class="dropdown-divider">
+        <h6 class="dropdown-header">Impact Metrics</h6>
+        <button class="dropdown-item" type="button" id="c2">Confidentiality (C) </button>
+        <button class="dropdown-item" type="button" id="i2">Integrity (I)</button>
+        <button class="dropdown-item" type="button" id="a2">Availability (A)</button>
+    </div>
+</script>
+
+<script id="template-metrics-v3" type="text/template">
+    <button class="btn btn-secondary dropdown-toggle select-metric btn-sm" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="white-space: pre;")>
+        Select a Metric 
+       </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+        <h6 class="dropdown-header">Exploitability Metrics</h6>
+        <button class="dropdown-item" type="button" id="av3">Attack Vector (AV)</button>
+        <button class="dropdown-item" type="button" id="ac3">Attack Complexity (AC)</button>
+        <button class="dropdown-item" type="button" id="pr3">Privileges Required (PR)</button>
+        <button class="dropdown-item" type="button" id="ui3">User Interaction (UI) </button>
+
+        <hr class="dropdown-divider">
+        <h6 class="dropdown-header">Impact Metrics</h6>
+        <button class="dropdown-item" type="button" id="c3">Confidentiality (C) </button>
+        <button class="dropdown-item" type="button" id="i3">Integrity (I)</button>
+        <button class="dropdown-item" type="button" id="a3">Availability (A)</button>
+        <hr class="dropdown-divider">
+        <button class="dropdown-item" type="button" id="s3">Scope (S)</button>
+    </div>
+</script>
+
+<script id="template-metrics-values" type="text/template">
+    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" data-toggle="dropdown">Select Value
+            <span class="caret"></span>
+        </button>
+    <ul class="dropdown-menu addedDropdown">
+        <!-- here goes the dynamic list -->
+    </ul>
+
+</script>
+
 {% endblock script %}

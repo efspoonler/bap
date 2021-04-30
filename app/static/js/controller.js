@@ -140,6 +140,8 @@ export default class Controller {
         //     vulView.filterCvssVersion(data); // data is an array of ids
         //   });
       })
+
+      // TODO: one click event function
       .onEvent('clickSeverityFilter', (cvssScoresArray) => {
         const params = { filter: 'severity' };
 
@@ -155,7 +157,38 @@ export default class Controller {
               model.redrawConnectedArtifacts();
             });
           });
+      })
+      .onEvent('applyBaseVectorFilter', (activeFilters) => {
+        const param = activeFilters;
+        param.filter = 'baseVector';
+        DataWareHouse.applyNewFilter(param)
+          .then((filteredData) => {
+            this.models.forEach((model) => {
+              model.updateData(filteredData[model.prefix]);
+              model.redrawConnectedArtifacts();
+            });
+          });
+      })
+      .onEvent('rangeSliderChanged', (callingViewAndMinMax) => {
+        const [min, max] = callingViewAndMinMax;
+        const params = {
+          filter: 'rangeSlider',
+          min,
+          max,
+        };
+        // this.models.forEach((m) => {
+        //   m.applyRangeFilterToData(min, max);
+        // });
+
+        DataWareHouse.applyNewFilter(params)
+          .then((filteredData) => {
+            this.models.forEach((model) => {
+              model.updateData(filteredData[model.prefix]);
+              model.redrawConnectedArtifacts();
+            });
+          });
       });
+
     this.initVis();
   }
 

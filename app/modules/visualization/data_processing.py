@@ -6,6 +6,9 @@ pandasDataFrame = TypeVar('pandas.core.frame.DataFrame')
 global app_dataFrame, lib_dataFrame, vula_dataFrame
 
 
+def load_app_forest():
+  apps_json: List = pd.read_pickle('./app/static/pickleFiles/app_forest', compression='infer') # json
+  print(apps_json) 
 
 def load_pickle_files():
     global app_dataFrame, lib_dataFrame, vula_dataFrame
@@ -21,6 +24,9 @@ def load_pickle_files():
     vula_df.replace('', 'null', inplace = True)
     
     vula_df['cvssScore'] = vula_df['cvssScore'].replace("null", "0.0").astype(float)# seet null -> 10 to enforce a worst case approach.
+
+    #In die containdVulnerabilitites absteigen und cvssScore ändern!!
+    #lib_df.replace('', 'null', inplace = True) #needed, since we work with regex in some filters.
 
     # Todo sort first by Cvssscor verison
     #
@@ -100,7 +106,7 @@ def init_vis(callingModel, load_pickle_files=False):
          
          vula_dataFrame['cvssScore'] = vula_dataFrame['cvssScore'].replace("null", "0.0").astype(float) # seet null -> 10 to enforce a worst case approach.
          vul_df =vula_dataFrame.copy(deep=True) 
-         vul_init_tooltip = vul_df[['cve', 'cvssVector', 'cvssVersion', 'description']].copy()
+         vul_init_tooltip = vul_df[['cve','cvssScore', 'cvssVector', 'cvssVersion', 'description']].copy()
          vul_df = vul_df[['cvssScore', 'cve']]
          vul_df.sort_values(by='cvssScore', inplace=True ) # ['cvssVersion', 'cvssScore' ]
          vul_df.rename(columns={'cvssScore': 'color', 'cve': 'id'}, inplace = True)
@@ -354,7 +360,7 @@ filter_function = {
 }
 
 
-
+#load_app_forest()
 #load_pickle_files()
 #severityFilterInit()
 #filter_function['cvssVersion']('true', 'false', 'app')

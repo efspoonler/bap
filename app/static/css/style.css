@@ -6,7 +6,9 @@
 }
 */
 
-
+div .filterSection {
+  display:block;
+}
 /* per default from-check has a padding on the left. */
 .my-form-check-modification {
   padding-left: 0 !important;
@@ -15,12 +17,13 @@
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
   font-size: 10px;
+  background-color:#1c87c9;
 }
 
-rect.clicked{
+/* rect.clicked{
   fill: blue !important;
   opacity: .5;
-}
+} */
 rect[class *= "connected"]{
   fill: red !important;
   /* opacity: .3; */
@@ -40,18 +43,26 @@ rect.default{
 } 
 
 rect.cvssScore-selected{
-  fill:yellow
+  /* fill:yellow */
 }
 #tooltip{
   position: absolute;
   background-color: white;
   border: solid;
-  border-width: 2px;
+  border-width: 1px;
   border-radius: 5px;
   padding: 5px;
 }
 
 
+.btn{
+ fill-opacity: 0.5;
+}
+
+rect {
+  stroke-width: 1px;
+  stroke-opacity: 1px;
+}
 /*
 rect.default{
   fill: rgb(255, 255, 255);

@@ -2,6 +2,7 @@
 /* eslint-disable max-classes-per-file */
 
 import EventEmitter from './events.js';
+import { colorscales } from './tools/helpers.js';
 /**
  * Base class
  */
@@ -27,15 +28,6 @@ class View extends EventEmitter {
     this._height = -1;
     this._rootSvg = -1;
     this._edgeLen = -1;
-    this._colorScale = {
-      cve: d3.scaleThreshold() /// / original nist color
-        .domain([0.1, 4.0, 7.0, 9.0])
-        .range(['darkgrey', '#ffe358', '#edb15c', '#d9534f', 'black']), // original nist color: f2cc0c
-
-      goodall: d3.scaleThreshold()
-        .domain([1, 2, 3, 4, 5, 6, 7, 8, 9])
-        .range(['darkgrey', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58']),
-    };
   }
 
   get prefix() {
@@ -46,9 +38,9 @@ class View extends EventEmitter {
     return this._controlStatus[elem];
   }
 
-  getColorScale(name) {
-    return this._colorScale[name];
-  }
+  // getColorScale(name) {
+  //   return this._colorScale[name];
+  // }
 
   /*
   bindClickedElem(handler) {
@@ -114,7 +106,6 @@ class View extends EventEmitter {
           // TODO: implement Logic. Selected event must depend on the checkboxs 'check' property
 
           if (numbOfClickedElems >= 2) {
-            console.log(`numb of clicked elems: ${numbOfClickedElems}`);
             this.emit('checkboxClicked', this._prefix);
             this.emit('displayIntersection', this._prefix);
           } else {
@@ -158,10 +149,6 @@ class View extends EventEmitter {
           .node()
           .value
           .toLowerCase(); // case of the input is 'ignored'
-
-        // console.log(currentInputValue);
-        // console.log(currentInputValue.length);
-        // console.log(`.${this._viewDivId}-g`);
 
         const dynamicOpacity = 0.2;
         // If the search field is empty. we have an empty string, which machtes every artifact id.
@@ -222,7 +209,6 @@ class ArtifactView extends View {
   }
 
   initView() {
-    console.log(this._viewDivId);
     const viewDiv = d3.select(`#${this._viewDivId}`);
     this._width = viewDiv.node().offsetWidth;
     this._height = window.innerHeight - $('#nav-bar').outerHeight(true) - $('#above-vis').outerHeight(true) - $('.view-menu').outerHeight(true) - this.MARGINS.bottom;
@@ -237,8 +223,6 @@ class ArtifactView extends View {
   }
 
   render() {
-    console.log('render View');
-    console.log(this._dataSet[1]);
     // this section defines two helper functions which are needed for the placement of the rects
     const artifactPerRow = Math.floor(this._width / this._edgeLen);
     let heightTracker = 0 - this._edgeLen;
@@ -262,9 +246,8 @@ class ArtifactView extends View {
         (enter) => {
           const gs = enter
             .append('g')
-            .attr('class', `${this._viewDivId}-g`) // each artifact has its own group.
+            .attr('class', `${this._viewDivId}-g`); // each artifact has its own group.
           // .transition()
-            .attr('transform', (d, i) => `translate(${gx(d, i)}, ${gy(d, i)})`);
 
           gs
             .append('rect')
@@ -275,8 +258,10 @@ class ArtifactView extends View {
             // that add a small padding of 1px between each elements. + 1px for the border.
             .attr('width', this._edgeLen - 2)
             .attr('height', this._edgeLen - 2)
-            .attr('stroke', (d) => this.getColorScale('cve')(d.color))
-            .attr('style', (d) => `fill:${this.getColorScale('cve')(d.color)}`);
+            .attr('stroke', (d) => colorscales.cve(d.color))
+            .attr('stroke-opacity', 0.7)
+            .attr('style', (d) => `fill:${colorscales.cve(d.color)}`)
+            .attr('fill-opacity', 0.5);
 
           gs
           // if we chose to pass an argument, the first would be the clicked element.
@@ -288,14 +273,15 @@ class ArtifactView extends View {
                 this._currentlyClickedElemsId = this._currentlyClickedElemsId
                   .filter((e) => e !== attachedData.id);
                 clicked
-                  .classed('clicked', false);
+                  .classed('clicked', false)
+                  .attr('fill-opacity', 0.5);
               } else {
                 this._currentlyClickedElemsId.push(attachedData.id);
 
                 clicked
-                  .classed('clicked', true);
+                  .classed('clicked', true)
+                  .attr('fill-opacity', 0.7);
               }
-              console.log(this._currentlyClickedElemsId);
               this.emit('clickArtifact', [this._prefix, attachedData.id]);
             })
             .on('mouseover mousemove', (event, attachedData) => {
@@ -324,29 +310,42 @@ class ArtifactView extends View {
               return '';
             });
             */
+          return gs;
         },
         (update) => {
-          console.log('update');
-        },
+          update
+            .selectAll('.clicked')
+            .attr('fill-opacity', 1);
+          return update;
+        }, // console.log(update);
+
+        // console.log(update.attr('style'));
+        // d3.
+
         (exit) => {
           console.log('we exit');
+
+          // TODO: ANIMATE removal of items.
           exit
-            .attr('fill', 'brown')
-            // .call((exit) => exit.transition(t)
-            //  .attr('y', this._height)
-            .remove(); // );
+            .call((exit) => exit.transition().duration(2000)
+              .attr('transform', (d, i) => `translate(${Math.floor(Math.random() * this._width) + 1}, ${2 * this._height})`)
+              .remove());
         },
 
-      );
+      )
+
+      .call((s) => {
+        s.transition().duration(2000).attr('transform', (d, i) => `translate(${gx(d, i)}, ${gy(d, i)})`);
+      });
 
     // This function is needed durign redrawing. it takes care of all clicked elements.
     // clicked elements should be clicked if redrawed
     d3.selectAll(`.${this._viewDivId}-g`)
       .filter((d) => this._currentlyClickedElemsId.includes(d.id))
-      .filter((d) => { console.log(d.id); return true; })
       .selectAll('rect')
       // .attr('style', 'fill:green')
-      .classed('clicked', true);
+      .classed('clicked', true)
+      .attr('fill-opacity', 1);
   }
 
   updateConnectedElems(updatedData) {
@@ -432,10 +431,11 @@ class ArtifactView extends View {
     return dim;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   removeAllArtifacts() {
-    d3.select(`#${this._viewDivId}-svg`)
-      .selectAll('*')
-      .remove();
+    // d3.select(`#${this._viewDivId}-svg`)
+    //   .selectAll('*')
+    //   .remove();
   }
 
   edgeLen(len) {

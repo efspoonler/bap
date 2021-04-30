@@ -69,6 +69,41 @@ function createTooltip() {
     .style('opacity', 0);
 }
 
+const colorscales = {
+  cve: d3.scaleThreshold() /// / original nist color
+    .domain([0.1, 4.0, 7.0, 9.0])
+    .range(['darkgrey', '#ffe358', '#edb15c', '#d9534f', 'black']), // original nist color: f2cc0c
+
+  goodall: d3.scaleThreshold()
+    .domain([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    .range(['darkgrey', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58']),
+};
+
+const dynamicDropdowns = {
+
+  av: `  
+  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown Example
+  <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+  <li>
+  <div class="checkbox">
+      <label>
+          <input type="checkbox">  Two
+      </label>
+  </div>
+</li>
+<li>
+  <div class="checkbox">
+      <label>
+          <input type="checkbox">  Two
+      </label>
+  </div>
+</li>
+  </ul>
+`,
+};
+
 export {
-  sortWrapper, getTwoAttributesNested, calcEdgeLen, getUniquePart, createTooltip,
+  // eslint-disable-next-line max-len
+  sortWrapper, getTwoAttributesNested, calcEdgeLen, getUniquePart, createTooltip, colorscales, dynamicDropdowns,
 };
