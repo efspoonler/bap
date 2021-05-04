@@ -162,11 +162,13 @@ class DataWareHouse extends Model {
   }
 
   getIntersection(viewPrefix) {
+    console.log('\ngetIntersection');
     /*
      befor returning, we need to update the intersection property.
      all keys of clicked elems in the respective view.
     */
     const connectedKeys = Object.keys(this._data.connected[viewPrefix]);
+    console.log(connectedKeys);
     const path = this._data.connected[viewPrefix];
 
     /*
@@ -174,25 +176,33 @@ class DataWareHouse extends Model {
      are collected in the 'intersection' array.
     */
     let intersection = [];
+    console.log(path);
+    console.log('\n');
+    if (connectedKeys.length >= 2) {
+      // deep copy of one clicked Elemnts connected elements. (pop removes last elem and returns it)
+      intersection = JSON.parse(JSON.stringify(path[connectedKeys.pop()]));
+      console.log(connectedKeys);
+      // TODO: who is resposible for the case: just one element is selected?
+      // - The loop will never start! return value would be false.
 
-    // deep copy of one clicked Elemnts connected elements. (pop removes last elem and returns it)
-    intersection = JSON.parse(JSON.stringify(path[connectedKeys.pop()]));
-
-    // TODO: who is resposible for the case: just one element is selected?
-    // - The loop will never start! return value would be false.
-
-    /*
+      /*
      Idea: If an element occures in each connection,
      it needs to occure in any two arrays - hence it will never be filtered out.
     */
-    while (connectedKeys.length > 0) {
-      const currentKey = connectedKeys.pop();
-      // update the intersection array, by remove any property that does not occure in both arrays.
-      intersection = intersection.filter((value) => path[currentKey].includes(value));
+
+      while (connectedKeys.length >= 1) {
+        const currentKey = connectedKeys.pop();
+        // update the intersection array,
+        // by removing any property that does not occure in both arrays
+        console.log('\ncurrentKey ');
+        console.log(path[currentKey]);
+
+        intersection = intersection.filter((value) => path[currentKey].includes(value));
+      }
     }
 
     this._data.intersection = intersection;
-    this.emit('conectedElemsChanged', [this._prefix, intersection]);
+    this.emit('intersectionDataChanged', [this._prefix, intersection]);
   }
 
   /**

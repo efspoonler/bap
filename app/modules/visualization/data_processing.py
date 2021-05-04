@@ -69,7 +69,7 @@ def init_vis(callingModel, load_pickle_files=False):
          app_tooltip['name'] = app_tooltip['gav']
          app_tooltip.rename(columns = {'gav': 'id'}, inplace = True)
 
-         app_data.sort_values(by='avg_severity', inplace=True)
+         app_data.sort_values(by=['avg_severity', 'gav'], inplace=True)
          app_data.rename(columns = {'avg_severity':'color', 'gav':'id'}, inplace = True)
          #normalizeColumnsLog(app_df)
          init_data: Dict = app_data.to_dict(orient='records')
@@ -88,7 +88,7 @@ def init_vis(callingModel, load_pickle_files=False):
          lib_tooltip_df.rename(columns={'libDigest': 'id', 'libId': 'name'}, inplace=True)
          lib_tooltip_df.set_index('id', inplace=True)
 
-         lib_init_data_df.sort_values(by='avg_severity', inplace=True)
+         lib_init_data_df.sort_values(by=['avg_severity', 'libDigest'], inplace=True)
          lib_init_data_df.rename(columns = {'avg_severity': 'color', 'libDigest': 'id'}, inplace = True)
          #normalizeColumnsLog(lib_df)
          init_data: Dict = lib_init_data_df.to_dict(orient='records')
@@ -106,9 +106,9 @@ def init_vis(callingModel, load_pickle_files=False):
          
          vula_dataFrame['cvssScore'] = vula_dataFrame['cvssScore'].replace("null", "0.0").astype(float) # seet null -> 10 to enforce a worst case approach.
          vul_df =vula_dataFrame.copy(deep=True) 
-         vul_init_tooltip = vul_df[['cve','cvssScore', 'cvssVector', 'cvssVersion', 'description']].copy()
+         vul_init_tooltip = vul_df[['cve','cvssScore', 'cvssVector', 'cvssVersion', 'description', 'meta_affected_apps']].copy()
          vul_df = vul_df[['cvssScore', 'cve']]
-         vul_df.sort_values(by='cvssScore', inplace=True ) # ['cvssVersion', 'cvssScore' ]
+         vul_df.sort_values(by=['cvssScore', 'cve'], inplace=True ) # ['cvssVersion', 'cvssScore' ]
          vul_df.rename(columns={'cvssScore': 'color', 'cve': 'id'}, inplace = True)
          vul_init_tooltip['name'] = vul_init_tooltip['cve']
          vul_init_tooltip.set_index('cve', inplace=True)

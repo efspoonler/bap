@@ -219,7 +219,35 @@ class ViewFilters extends EventEmitter {
     this.initBaseMetricFilter();
     this.addDropdownMetric();
     this.addDropdownList();
-    this.addRangeSlider();
+
+    this.addIntersectionHighlighting();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  addIntersectionHighlighting() {
+    const template = document.getElementById('template-intersection-toggle').innerHTML;
+    const rangFilterDivRow = d3.select('#filterSection')
+      .append('div')
+      .attr('class', 'row mt-4');
+    // rangFilterDivRow
+    //   .append('p')
+    //   .attr('class', 'intrsct label')
+    //   // .attr('text-anchor', 'middle')
+    //   .text('Intersection Highlighting');
+    // rangFilterDivRow;
+
+    rangFilterDivRow
+      .html(template);
+    // .append('g')
+    // .attr('transform', `translate(${this._width / 2}0)`)
+
+    d3.select('#intersection-toggle')
+      .on('mouseup', (event) => {
+        const selectedView = event.target.id.split('-', 1)[0];
+        console.log(event);
+        this.emit('intersectionTargetChanged', selectedView);
+        this.emit('resetAllIntersectedElem');
+      });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -229,14 +257,18 @@ class ViewFilters extends EventEmitter {
       .attr('class', 'row');
 
     rangFilterDivRow
-      .append('div')
-      .attr('id', 'value-range')
-      .attr('class', 'col-sm-2');
+      .append('p')
+      .attr('class', 'rangeSlider label')
+      .text('Range Slider: select an interval. Filter artifacts that solely contain vulnerabilitites in the intervall.');
+    // rangFilterDivRow
+    //   .append('div')
+    //   .attr('id', 'value-range')
+    //   .attr('class', 'col');
 
     rangFilterDivRow
       .append('div')
       .attr('id', 'slider-range')
-      .attr('class', 'col-sm');
+      .attr('class', 'col');
     // Range
     const sliderRange = d3
       .sliderBottom()
@@ -256,10 +288,10 @@ class ViewFilters extends EventEmitter {
     const gRange = d3
       .select('div#slider-range')
       .append('svg')
-      .attr('width', 500)
+      .attr('width', this._width + this.MARGINS.left + this.MARGINS.right)
       .attr('height', 100)
       .append('g')
-      .attr('transform', `translate(${this.MARGINS.left - 5},${this.MARGINS.top})`);
+      .attr('transform', `translate(${this.MARGINS.left * 2 - 5},${this.MARGINS.top})`);
 
     gRange.call(sliderRange);
 
@@ -269,10 +301,38 @@ class ViewFilters extends EventEmitter {
         .map(d3.format('.2%'))
         .join('-'),
     );
+
+    gRange
+      .append('g')
+      .attr('transform', `translate(${(this._width) / 2 - 10},50)`)
+      .append('text')
+      .attr('class', 'x label')
+      .attr('text-anchor', 'middle')
+      .text('cvss score');
+
+    gRange
+      .append('g')
+      .attr('transform', 'translate(0,50)')
+      .append('text')
+      .attr('class', 'min-x label')
+      .attr('text-anchor', 'middle')
+      .text('min');
+
+    gRange
+      .append('g')
+      .attr('transform', `translate(${this._width - 20},50)`)
+      .append('text')
+      .attr('class', 'max-x label')
+      .attr('text-anchor', 'middle')
+      .text('max');
   }
 
   cvssVersionFilter() {
-    const filterDiv = d3.select(`#${this._filterDivId}`);
+    const filterDiv = d3.select(`#${this._filterDivId}`).append('div').attr('class', 'row mb-4');
+    filterDiv
+      .append('p')
+      .attr('class', 'versionFilter label')
+      .text('Version Filter: ');
     filterDiv
       .append('div')
       .attr('class', 'form-check form-check-inline')
@@ -283,7 +343,7 @@ class ViewFilters extends EventEmitter {
       .attr('id', 'cvssversiontwo');
     filterDiv.select('div')
       .append('label')
-      .attr('class', 'form-check-label')
+      .attr('class', 'form-check-label label')
       .text('v2')
       .attr('for', 'cvssversiontwo');
 
@@ -299,16 +359,34 @@ class ViewFilters extends EventEmitter {
 
     filterDiv.select('#divVtwo')
       .append('label')
-      .attr('class', 'form-check-label')
+      .attr('class', 'form-check-label label')
       .text('v3')
       .attr('for', 'cvssversionthree');
 
+    filterDiv
+      .append('div')
+      .attr('class', 'form-check form-check-inline')
+      .attr('id', 'divVnone')
+      .append('input')
+      .attr('class', 'form-check-input') // this class has a margin-left of -1,25rem!
+      .attr('type', 'checkbox')
+      .property('checked', true)
+      .attr('id', 'cvssversionnone');
+
+    filterDiv.select('#divVnone')
+      .append('label')
+      .attr('class', 'form-check-label label')
+      .text('none')
+      .attr('for', 'cvssversionnone');
+
     filterDiv.selectAll('input')
       .on('click', () => {
+        // e.preventDefault();
         const v2 = d3.select('#cvssversiontwo').property('checked');
         const v3 = d3.select('#cvssversionthree').property('checked');
+        const none = d3.select('#cvssversionnone').property('checked');
         console.log(`checkboxstatus: v2 is ${v2} v3 is:${v3}`);
-        this.emit('filterCvssVersion', [v2, v3]);
+        this.emit('filterCvssVersion', [v2, v3, none]);
       });
   }
 
@@ -323,21 +401,28 @@ class ViewFilters extends EventEmitter {
       bins[i] = d[0];
     });
     const filterDiv = d3.select(`#${this._filterDivId}`);
-    const severityChartHeight = this._height * 0.15;
+    const severityChartHeight = this._height * 0.3;
     console.log('add severity filter');
     const severitySvg = filterDiv
       .append('div')
-      .attr('class', 'row')
+      .attr('class', 'row mt-4')
       .append('div')
       .attr('class', 'severityBarChart d-flex align-items-end')
       // .attr('style', 'position:absolute; bottom:0; padding-bottom: 20px;')
       .append('svg')
       .attr('id', `${this._filterDivId}-severity`) // svg that contains all g-Artifacts
       .attr('width', this._width + this.MARGINS.left + this.MARGINS.right)
-      .attr('height', severityChartHeight + this.MARGINS.top + this.MARGINS.bottom)
+      .attr('height', severityChartHeight + this.MARGINS.top + 3 * this.MARGINS.bottom)
       .append('g')
-      .attr('transform', `translate(${this.MARGINS.left},${this.MARGINS.top})`);
+      .attr('transform', `translate(${2 * this.MARGINS.left},${this.MARGINS.top})`);
 
+    severitySvg
+      .append('g')
+      .attr('transform', `translate(${this._width / 2},-5)`)
+      .append('text')
+      .attr('class', 'headline label')
+      .attr('text-anchor', 'middle')
+      .text('Severity Distribution Chart');
     const xAxis = d3.scaleBand()
       .range([0, this._width])
       .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -347,6 +432,14 @@ class ViewFilters extends EventEmitter {
       .append('g')
       .attr('transform', `translate(0,${severityChartHeight})`)
       .call(d3.axisBottom(xAxis));
+
+    severitySvg
+      .append('g')
+      .attr('transform', `translate(${this._width / 2},${severityChartHeight + 1.5 * this.MARGINS.bottom})`)
+      .append('text')
+      .attr('class', 'x label')
+      .attr('text-anchor', 'middle')
+      .text('cvss score');
 
     const yAxis = d3.scaleLinear()
       .domain([d3.min(bins), d3.max(bins)])
@@ -359,6 +452,15 @@ class ViewFilters extends EventEmitter {
     severitySvg
       .append('g')
       .call(d3.axisLeft(yAxis).ticks(4).tickFormat(d3.format('.1s')));
+
+    severitySvg
+      .append('g')
+      .attr('transform', `translate(${-1.5 * this.MARGINS.left},${severityChartHeight / 2}) rotate(-90)`)
+      .append('text')
+      .attr('class', 'y label')
+      .attr('text-anchor', 'middle')
+      .text('total number');
+
     severitySvg
       .selectAll('mybar')
       // data has the form: [[...], {...}]
@@ -409,6 +511,8 @@ class ViewFilters extends EventEmitter {
         const selectedSeverities = selectedData.map((d) => d[2]); // id === cvssScore.
         this.emit('clickSeverityFilter', selectedSeverities);
       });
+
+    this.addRangeSlider();
   }
 
   initBaseMetricFilter() {
@@ -438,7 +542,7 @@ class ViewFilters extends EventEmitter {
     */
     filterDiv // html skelleton
       .html(`
-      <label class="control-label">CVE Base Vector Filter</label>
+      <label class="base-score label">CVE Base Vector Filter</label>
       <div class="controls"> 
         <div class="form" id="baseVectorDiv">
         </div>
@@ -448,7 +552,7 @@ class ViewFilters extends EventEmitter {
       </button>`);
     apply
       .html(
-        `<button id="apply-vector-filter" class="btn btn-outline-primary btn-block" type="submit">apply</button>
+        `<button id="apply-vector-filter" class="btn btn-sm btn-outline-primary btn-block" type="submit">apply</button>
     `,
       );
 
@@ -490,9 +594,7 @@ class ViewFilters extends EventEmitter {
         */
         const clickedElem = evnt.target;
         const encDiv = d3.select(clickedElem.closest('.entry'));
-        console.log(clickedElem);
         const clickedElemId = d3.select(clickedElem).select('input').attr('id');
-        console.log(clickedElemId);
         const versionId = encDiv
           .select('div.dropdown')
           .remove();
@@ -505,7 +607,6 @@ class ViewFilters extends EventEmitter {
 
         const container = encDiv;
         this.redrawMetrics(clickedElemId, container);
-        console.log();
       });
     this.disableAlreadySelectedMetrics();
     this.addDropdownList();
@@ -712,6 +813,7 @@ class ViewFilters extends EventEmitter {
   updateWidthAndHeight() {
     const rootDiv = d3.select(`#${this._filterDivId}`);
     this._width = $(`#${this._filterDivId}`)[0].clientWidth - this.MARGINS.left - this.MARGINS.right;
+    console.log(this._width);
     this._height = window.innerHeight - $('#nav-bar').outerHeight(true) - $('#above-vis').outerHeight(true) - $('.view-menu').outerHeight(true) - this.MARGINS.bottom;
 
     // this._height = 500;

@@ -13,6 +13,8 @@ class View extends EventEmitter {
     this._prefix = root;
     this._viewDivId = `${root}-view`; // points to the encapsulating div
     this._menuDivId = `${root}-menu`;
+    this._startTime = 0;
+    this._stopTime = 0;
 
     this.MARGINS = {
       top: 20,
@@ -23,7 +25,7 @@ class View extends EventEmitter {
 
     // contains the current status of the control.
     // the keys of the object reflects the HTML-elements id.
-    this._controlStatus = {};
+    this._controlStatus = { showIntersection: false };
     this._width = -1;
     this._height = -1;
     this._rootSvg = -1;
@@ -56,79 +58,78 @@ class View extends EventEmitter {
     this._controlStatus[checkBoxId] = false;
     const textSearchId = `${this._menuDivId}-search`;
 
-    const checkBoxDiv = d3.select(`#${this._menuDivId}`)
-      .append('div')
-      .attr('id', `${this._menuDivId}-div-checkbox`)
-      .attr('class', 'form-check no-gutters my-form-check-modification');
-      // .attr('style', 'display: true');
+    // const checkBoxDiv = d3.select(`#${this._menuDivId}`)
+    //   .append('div')
+    //   .attr('id', `${this._menuDivId}-div-checkbox`)
+    //   .attr('class', 'form-check no-gutters my-form-check-modification');
+    //   // .attr('style', 'display: true');
 
-    checkBoxDiv
-      .append('input')
-      .attr('class', 'from-check-input')
-      .attr('type', 'checkbox')
-      .attr('id', checkBoxId)
-      .on('click', () => {
-        // We count the number of clicked elements inside each ArtifacView.
-        let numbOfClickedElems = 0;
+    // checkBoxDiv
+    //   .append('input')
+    //   .attr('class', 'from-check-input')
+    //   .attr('type', 'checkbox')
+    //   .attr('id', checkBoxId)
+    //   .on('click', () => {
+    //     // We count the number of clicked elements inside each ArtifacView.
+    //     let numbOfClickedElems = 0;
 
-        /*
-         * randomClickedElemsId contains the id of a clicked Artifact.
-         * this id will triggering the redrawing of all selected elemets when
-         * the checkbox is not checked anymore. (quick and dirty)
-         *
-         */
-        // const randomClickedElemsId = null;
-        const checkboxId = `${this._menuDivId}-checkbox`;
-        const clickedElemIds = [];
-        this._updateControlStatus(checkBoxId, d3.select(`#${checkboxId}`).property('checked')); // update the datastructure with the elements state.
+    //     /*
+    //      * randomClickedElemsId contains the id of a clicked Artifact.
+    //      * this id will triggering the redrawing of all selected elemets when
+    //      * the checkbox is not checked anymore. (quick and dirty)
+    //      *
+    //      */
+    //     // const randomClickedElemsId = null;
+    //     const checkboxId = `${this._menuDivId}-checkbox`;
+    //     const clickedElemIds = [];
 
-        // if (this._controlStatus[checkBoxId]) {
-        //   this.emit('checkboxClicked', this._prefix);
-        // }
-        d3.select(`#${this._viewDivId}-svg`)
-          .selectAll('rect')
+    //     // update the datastructure with the elements state.
+    //     this._updateControlStatus(checkBoxId, d3.select(`#${checkboxId}`).property('checked'));
 
-          // need anonym function to have the right scope! (arrow-func does not work)!
-          .each(function (d) {
-            if (d3.select(this).classed('clicked')) {
-              numbOfClickedElems += 1;
-              clickedElemIds.push(d.id);
-            }
-          });
+    //     // if (this._controlStatus[checkBoxId]) {
+    //     //   this.emit('checkboxClicked', this._prefix);
+    //     // }
+    //     d3.select(`#${this._viewDivId}-svg`)
+    //       .selectAll('rect')
+    //       // need anonym function to have the right scope! (arrow-func does not work)!
+    //       .each(function (d) {
+    //         if (d3.select(this).classed('clicked')) {
+    //           numbOfClickedElems += 1;
+    //           clickedElemIds.push(d.id);
+    //         }
+    //       });
 
-        /*
-         * _controlStatu knows if the checkbox is currently checked.
-         *
-         *
-         *
-         */
-        if (this._controlStatus[checkboxId]) { // case: the checkbox is checked
-          // TODO: implement Logic. Selected event must depend on the checkboxs 'check' property
+    //     /*
+    //      * _controlStatu knows if the checkbox is currently checked.
+    //      *
+    //      *
+    //      *
+    //      */
+    //     if (this._controlStatus[checkboxId]) { // case: the checkbox is checked
+    //       if (numbOfClickedElems >= 2) {
+    //         this.emit('checkboxClicked', this._prefix);
+    //         this.emit('displayIntersection', this._prefix);
+    //       } else {
+    //         alert(`please select at least two elements in this View. You selected just: ${numbOfClickedElems} elements.`);
+    //         // reverse changes
+    //         d3.select(`#${this._menuDivId}-checkbox`)
+    //           .property('checked', false);
+    //         this._updateControlStatus(checkBoxId, false);
+    //       }
+    //     } else { // case: the checkbox was un-checked.
+    //       console.log('checkbox not checked anymore');
+    //       if (clickedElemIds.length > 0) {
+    //         this.emit('uncheckCheckbox');
+    //         // this.emit('clickArtifact', [this._prefix, clickedElemIds.pop()]); // quick and dirty
+    //       }
+    //     }
+    //   });
 
-          if (numbOfClickedElems >= 2) {
-            this.emit('checkboxClicked', this._prefix);
-            this.emit('displayIntersection', this._prefix);
-          } else {
-            alert(`please select at least two elements in this View. You selected just: ${numbOfClickedElems} elements.`);
-            // reverse changes
-            d3.select(`#${this._menuDivId}-checkbox`)
-              .property('checked', false);
-            this._updateControlStatus(checkBoxId, false);
-          }
-        } else { // case: the checkbox was un-checked.
-          console.log('checkbox not checked anymore');
-          if (clickedElemIds.length > 0) {
-            this.emit('uncheckCheckbox');
-            // this.emit('clickArtifact', [this._prefix, clickedElemIds.pop()]); // quick and dirty
-          }
-        }
-      });
-
-    checkBoxDiv
-      .append('label')
-      .attr('class', 'form-check-label')
-      .text(' checkbox')
-      .attr('for', checkBoxId);
+    // checkBoxDiv
+    //   .append('label')
+    //   .attr('class', 'form-check-label')
+    //   .text(' checkbox')
+    //   .attr('for', checkBoxId);
 
     /* Init Search function */
     d3.select(`#${this._menuDivId}`)
@@ -139,6 +140,7 @@ class View extends EventEmitter {
       .append('input')
       .attr('type', 'search')
       .attr('id', textSearchId)
+      .attr('placeholder', `${this._prefix} view`)
       .attr('class', 'form-control');
 
     d3.select(`#${textSearchId}`)
@@ -264,26 +266,65 @@ class ArtifactView extends View {
             .attr('fill-opacity', 0.5);
 
           gs
-          // if we chose to pass an argument, the first would be the clicked element.
-            .on('click', (clickedElem, attachedData) => {
-              const clicked = d3.select(clickedElem.target);
 
-              if (clicked.classed('clicked')) { // check if the class string contains 'clicked'.
-                // In ECMA6 remove elemId from array
-                this._currentlyClickedElemsId = this._currentlyClickedElemsId
-                  .filter((e) => e !== attachedData.id);
-                clicked
-                  .classed('clicked', false)
-                  .attr('fill-opacity', 0.5);
-              } else {
-                this._currentlyClickedElemsId.push(attachedData.id);
-
-                clicked
-                  .classed('clicked', true)
-                  .attr('fill-opacity', 0.7);
-              }
-              this.emit('clickArtifact', [this._prefix, attachedData.id]);
+            .on('mousedown', () => {
+              this._startTime = performance.now();
             })
+            .on('mouseup', (clickedElem, attachedData) => {
+              this._stopTime = performance.now();
+              const timeElapsed = this._stopTime - this._startTime; // in ms
+
+              console.log('\n Start and Stop Time:');
+              console.log(this._startTime);
+              console.log(this._stopTime);
+
+              if (timeElapsed <= 500) {
+                const clicked = d3.select(clickedElem.target);
+
+                if (clicked.classed('clicked')) { // check if the class string contains 'clicked'.
+                  // In ECMA6 remove elemId from array
+                  this._currentlyClickedElemsId = this._currentlyClickedElemsId
+                    .filter((e) => e !== attachedData.id);
+                  clicked
+                    .classed('clicked', false)
+                    .attr('fill-opacity', 0.5)
+                    .attr('stroke-opacity', 0.7);
+                } else {
+                  this._currentlyClickedElemsId.push(attachedData.id);
+
+                  clicked
+                    .classed('clicked', true)
+                    .attr('fill-opacity', 1)
+                    .attr('stroke-opacity', 1);
+                }
+                this.emit('clickArtifact', [this._prefix, attachedData.id]);
+              } else {
+                console.log('other Functionality');
+                this.emit('createDependencyGraph', [this._prefix, attachedData.id]);
+              }
+            })
+          // // if we chose to pass an argument, the first would be the clicked element.
+          //   .on('click', (clickedElem, attachedData) => {
+          //     const clicked = d3.select(clickedElem.target);
+
+          //     if (clicked.classed('clicked')) { // check if the class string contains 'clicked'.
+          //       // In ECMA6 remove elemId from array
+          //       this._currentlyClickedElemsId = this._currentlyClickedElemsId
+          //         .filter((e) => e !== attachedData.id);
+          //       clicked
+          //         .classed('clicked', false)
+          //         .attr('fill-opacity', 0.5)
+          //         .attr('stroke-opacity', 0.7);
+          //     } else {
+          //       this._currentlyClickedElemsId.push(attachedData.id);
+
+          //       clicked
+          //         .classed('clicked', true)
+          //         .attr('fill-opacity', 1)
+          //         .attr('stroke-opacity', 1);
+          //     }
+          //     this.emit('clickArtifact', [this._prefix, attachedData.id]);
+          //   })
             .on('mouseover mousemove', (event, attachedData) => {
               this._updateControlStatus('xPos', event.pageX);
               this._updateControlStatus('yPos', event.pageY);
@@ -335,7 +376,8 @@ class ArtifactView extends View {
       )
 
       .call((s) => {
-        s.transition().duration(2000).attr('transform', (d, i) => `translate(${gx(d, i)}, ${gy(d, i)})`);
+        s.transition().duration(2000)
+          .attr('transform', (d, i) => `translate(${gx(d, i)}, ${gy(d, i)})`);
       });
 
     // This function is needed durign redrawing. it takes care of all clicked elements.
@@ -346,6 +388,34 @@ class ArtifactView extends View {
       // .attr('style', 'fill:green')
       .classed('clicked', true)
       .attr('fill-opacity', 1);
+
+    this._rootSvg
+      .on('click', () => {
+        this.clickIntersection();
+      });
+  }
+
+  resetIntersectionClass() {
+    this._rootSvg
+      .selectAll('rect')
+      .classed('intersection', false);
+  }
+
+  highlightIntersection(newIdData) {
+    console.log(`\nview: ${this._prefix} with data`);
+    console.log(newIdData);
+    console.log('\n');
+    d3
+      .selectAll(`.${this._viewDivId}-g`)
+      .filter((d) => newIdData.includes(d.id))
+      .selectAll('rect')
+      .classed('intersection', true);
+
+    d3
+      .selectAll(`.${this._viewDivId}-g`)
+      .filter((d) => !newIdData.includes(d.id))
+      .selectAll('rect')
+      .classed('intersection', false);
   }
 
   updateConnectedElems(updatedData) {
@@ -377,23 +447,29 @@ class ArtifactView extends View {
           data.meta_vulas];
         dynamicHtml += '<table style="width:50%; align:center"><tr><th>number of</th><th>count</th></tr>';
         dynamicHtml += `<tr><td>libraries</td><td>${libsTotal}</td></tr>`;
-        dynamicHtml += `<tr><td>vulnerable libraries</td><td>${libsAffected}</td></tr>`;
-        dynamicHtml += `<tr><td>different CVEs:</td><td>${numbVulas}</td></tr>`;
+        dynamicHtml += `<tr><td>Numb of vulnerable libraries</td><td>${libsAffected}</td></tr>`;
+        dynamicHtml += `<tr><td>Distinct CVEs:</td><td>${numbVulas}</td></tr>`;
       } else { // lib view
         const [numbVulas, appsAffected, description] = [data.meta_vulas,
           data.meta_affected_apps,
           data.description];
         dynamicHtml += '<table style="width:100%; align:left"><tr><th>number of       </th><th>count</th></tr>';
-        dynamicHtml += `<tr><td>apps including this lib</td><td>${appsAffected}</td></tr>`;
-        dynamicHtml += `<tr><td>different CVEs:</td><td>${numbVulas}</td></tr>`;
+        dynamicHtml += `<tr><td>Numb of apps including this lib</td><td>${appsAffected}</td></tr>`;
+        dynamicHtml += `<tr><td>Distinct CVEs:</td><td>${numbVulas}</td></tr>`;
       }
     } else { // vul view
-      const [vector, version, description] = [data.cvssVector,
+      const [vector, version, description, score, affectedApps] = [data.cvssVector,
         data.cvssVersion,
-        data.description];
-      dynamicHtml += '<table style="width:50%; align:center"><tr><th></th><th></th></tr>';
+        data.description,
+        data.cvssScore,
+        data.meta_affected_apps];
+      dynamicHtml += `<p style="text-align: center; color: darkgrey"> <b>score: ${score} </b></p>`;
+      dynamicHtml += '<table style="width:100%; align:left"><tr><th></th><th></th></tr>';
+
+      dynamicHtml += `<tr><td>Affected applications</td><td>${affectedApps}</td></tr>`;
       dynamicHtml += `<tr><td>Vector</td><td>${vector}</td></tr>`;
-      dynamicHtml += `<tr><td>version</td><td>${version}</td></tr>`;
+      dynamicHtml += `<tr><td>Version</td><td>${version}</td></tr>`;
+      console.log(vector);
       // dynamicHtml += `<tr><td>description</td><td>${description}</td></tr>`;
     }
     // if(data.meta_affected_apps === 'undefined'){ //we kn
@@ -449,6 +525,60 @@ class ArtifactView extends View {
 
   set dataSet(newData) {
     this._dataSet = newData;
+  }
+
+  fireClick() {
+    this.clickIntersection();
+  }
+
+  clickIntersection() {
+    // We count the number of clicked elements inside each ArtifacView.
+    let numbOfClickedElems = 0;
+
+    /*
+      * randomClickedElemsId contains the id of a clicked Artifact.
+      * this id will triggering the redrawing of all selected elemets when
+      * the checkbox is not checked anymore. (quick and dirty)
+      *
+      */
+    // const randomClickedElemsId = null;
+    // const checkboxId = `${this._menuDivId}-checkbox`;
+    const clickedElemIds = [];
+
+    // update the datastructure with the elements state.
+    // this._updateControlStatus(checkBoxId, d3.select(`#${checkboxId}`).property('checked'));
+
+    // if (this._controlStatus[checkBoxId]) {
+    //   this.emit('checkboxClicked', this._prefix);
+    // }
+    d3.select(`#${this._viewDivId}-svg`)
+      .selectAll('rect')
+    // need anonym function to have the right scope! (arrow-func does not work)!
+      .each(function (d) {
+        if (d3.select(this).classed('clicked')) {
+          numbOfClickedElems += 1;
+          clickedElemIds.push(d.id);
+        }
+      });
+    console.log(`lickedElemenets: ${numbOfClickedElems}`);
+
+    if (numbOfClickedElems <= 1) {
+      // console.log(this);
+      this.emit('resetAllIntersectedElem');
+    }
+    /*
+      * _controlStatu knows if the checkbox is currently checked.
+      *
+      *
+      *
+      */
+    if (this._controlStatus.showIntersection) { // case: the checkbox is checked
+      if (numbOfClickedElems >= 2) {
+        // this.emit('checkboxClicked', this._prefix);
+        console.log('two or more elements are clicked + we selected this view to show the intersection.');
+        this.emit('displayIntersection', this._prefix);
+      }
+    }
   }
 }
 

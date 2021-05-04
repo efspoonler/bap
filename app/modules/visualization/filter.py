@@ -94,20 +94,34 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
   # The passed df is either the app, lib or vul df.
   v2 = params['v2']
   v3 = params['v3']
+  noVersion = params['none']
   
   # Build regex
   myRegex = ''
   #print(f'value v2: {v2} -- v3: {v3}')
-  if (v2 == 'true' and v3 == 'true' ):
+  if (v2 == 'true' and v3 == 'true' and noVersion == 'true' ):
     # myRegex = '^2 || ^3 || ^null'
     return df_param # all checkboxes are checked. Hence we do not need to modify the df.
-  elif v2 == 'true' :
-    myRegex = '^2'
-  elif v3 == 'true':
+
+  # v2 always true
+  elif v2 == 'true' and v3 == 'false' and noVersion=='false':
+      myRegex= '^2'  
+  elif v2 == 'true' and v3 == 'true' and noVersion=='false':
+    myRegex = '^2|^3'
+  elif v2 == 'true' and v3 == 'false' and noVersion == 'true':
+    myRegex = '^2|^null'
+   
+  #v3 always true 
+  elif v2 == 'false' and v3 == 'true' and noVersion=='false':
     myRegex = '^3'  
-  else: # no chckbox selected
+  elif v2 == 'false' and v3 == 'true' and noVersion == 'true':
+      myRegex = '^3|^null'
+
+  else: # no chckbox selected or just none checkbox.
     myRegex = '^null' 
   
+
+  print(myRegex)
   # vul 
   if calling_model == 'vul':
      #print(df['cvssVersion'].tolist())
@@ -154,11 +168,20 @@ def set_column_as_color(calling_model: str, df_param, column_name='avg_severity'
     return df_ret
 
 def sort_df_by_column(calling_model, df_param, criteria = 'avg_severity'):
+    print(df_param.columns)
     print(f'{calling_model} called -> sort_df_by_column: {criteria}') 
     if calling_model == 'vul':
            criteria = 'cvssScore'
+           df_ret = df_param.sort_values(by=[criteria, 'cve'], inplace=False)
     
-    df_ret = df_param.sort_values(by=criteria, inplace=False)
+    if calling_model == 'lib':
+       df_ret = df_param.sort_values(by=[criteria, 'libDigest'], inplace=False)
+    
+    if calling_model == 'app':
+       df_ret = df_param.sort_values(by=[criteria, 'gav'], inplace=False)
+    
+
+    
     return df_ret
 
 def get_artifacts_by_cve_base_vector(calling_model, df_param, params):

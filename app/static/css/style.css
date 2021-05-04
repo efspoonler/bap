@@ -34,6 +34,9 @@ rect.default.connected.clicked{
   fill: yellowgreen !important;
 }
 
+rect.default.connected.intersection{
+  fill: blue !important;
+}
 rect.foundBySearch{
   fill: black  !important;
 
@@ -78,3 +81,27 @@ rect.default{
   
 }
 
+.label{
+  font-size: 10px !important; 
+  fill:  gray;
+  color: gray  !important ;
+  margin-bottom: 0 !important
+}
+p.label{
+  -webkit-text-fill-color: gray;
+  font-size: 10px; 
+  margin-bottom: 0
+}
+/* label{
+  font-size: 10px; 
+  color: gray;
+  margin-bottom: 0 !important
+} */
+
+.form-check-inline .form-check-input {
+  margin-left: 15px !important;
+}
+.btn{ 
+  /* prevents .active buttons to overlap the tooltip */
+  z-index: auto !important;
+}

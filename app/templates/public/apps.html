@@ -54,6 +54,8 @@
                     <div id="vul-view" class="row view-menu no-gutters"></div>
                 </div>
 
+                <div id="dependency-container"></div>
+
             </div>
 
         </div>
@@ -92,7 +94,7 @@
         <label class="btn btn-secondary btn-sm version-toggle active">
           <input type="radio" name="options" id="v2" autocomplete="off" checked> v2 
         </label>
-        <label class="btn btn-sm btn-secondary version-toggle">
+        <label class="btn btn-secondary btn-sm version-toggle">
           <input type="radio" name="options" id="v3" autocomplete="off"> v3 
         </label>
     </div>
@@ -116,7 +118,7 @@
 </script>
 
 <script id="template-metrics-v3" type="text/template">
-    <button class="btn btn-secondary dropdown-toggle select-metric btn-sm" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="white-space: pre;")>
+    <button class="btn btn-secondary dropdown-toggle select-metric btn-sm" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")>
         Select a Metric 
        </button>
     <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
@@ -144,6 +146,37 @@
         <!-- here goes the dynamic list -->
     </ul>
 
+</script>
+
+<script id="template-intersection-toggle" type="text/template">
+   <p class="intersect label" > Intersection Highlighting: the selected view highligths all artifacts inside the other views which are contained in all selected artifacts. </p>
+    <div class="btn-group btn-group-toggle btn-block " data-toggle="buttons" id="intersection-toggle">
+        <label class="btn btn-secondary btn-sm active" id="none-intersection">
+          <input type="radio" name="options"  autocomplete="off" checked> None 
+        </label>
+        <label class="btn btn-secondary btn-sm" id="app-intersection">
+          <input type="radio" name="options"  autocomplete="off"> Application
+        </label>
+        <label class="btn btn-secondary btn-sm" id="lib-intersection">
+          <input type="radio" name="options"  autocomplete="off"> Library
+        </label>
+        <label class="btn btn-secondary btn-sm" id="vul-intersection">
+            <input type="radio" name="options"  autocomplete="off"> Vulnerability
+          </label>
+        
+      </div>
+
+<!-- 
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="intersectionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Dropdown button
+      </button>
+      <div class="dropdown-menu" id="intersection-dropdown" aria-labelledby="intersectionDropdown">
+        <a class="dropdown-item" id="none-intersection" href="#">None</a> 
+        <a class="dropdown-item" id="app-intersection" href="#">Application</a>
+        <a class="dropdown-item" id="lib-intersection" href="#">Library</a>
+        <a class="dropdown-item" id="vul-intersection" href="#">Vulnerability</a>
+      </div>
+    </div> -->
 </script>
 
 {% endblock script %}

@@ -2,6 +2,7 @@ import { ArtifactView } from './view.js';
 import { DataWareHouse } from './model.js';
 import ViewFilters from './viewFilters.js';
 import { calcEdgeLen, getUniquePart } from './tools/helpers.js';
+import createDependecyGraph from './viewDependency.js';
 
 export default class Controller {
   constructor(modelList, viewList, filterSectionRoot) {
@@ -9,6 +10,10 @@ export default class Controller {
     this.models = [];
     this.views = [];
     this.filtersection = new ViewFilters(filterSectionRoot);
+
+    // track in which view the user selected an artifact first.
+    // is used as a stack.
+    this.firstSelectedView = [];
 
     // create the models - for each view, we have one model.
     modelList.forEach((model) => {
@@ -24,12 +29,14 @@ export default class Controller {
       view.onEvent('clickArtifact', (elem) => {
         const viewPrefix = elem[0];
         const artifactId = elem[1];
-        const changeView = this.getView(viewPrefix);
+        // const changeView = this.getView(viewPrefix);
         // workaround. we uncheck the checkBox so no additional logic is needed.
-        changeView.uncheckCheckbox();
+        // changeView.uncheckCheckbox();
         // each Views checkBox is made visible again.
-        this.views.forEach((v) => { v.showCheckbox(); });
-
+        // this.views.forEach((v) => { v.showCheckbox(); });
+        this.views.forEach((v) => {
+          v.fireClick();
+        });
         // checkbox is unchecked. we just want to add the new connected elems to the views.
         this.models.forEach((model) => {
           if (model.prefix === viewPrefix) {
@@ -37,34 +44,61 @@ export default class Controller {
           }
         });
       });
+      view.onEvent('resetAllIntersectedElem', () => {
+        this.views.forEach((v) => {
+          v.resetIntersectionClass();
+        });
+      });
+      view.onEvent('createDependencyGraph', (args) => {
+        const callingView = args[0];
+        const elemId = args[1];
+        console.log('createDepGraph caled');
+        console.log(args);
+        if (callingView === 'app') {
+          createDependecyGraph();
+        }
+      });
     });
 
     this.views.forEach((view) => {
       view.onEvent('displayIntersection', (paramViewPrefix) => {
-        this.models.forEach((model) => {
-          if (model.prefix !== paramViewPrefix) {
-            this.handleGetIntersectedElemes(paramViewPrefix);
-          }
-        });
+        (async () => {
+          // eslint-disable-next-line no-restricted-syntax
+          // const allDatasetsAreLoaded = false;
+          // while (!allDatasetsAreLoaded) {
+          // eslint-disable-next-line no-await-in-loop
+          const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+          // eslint-disable-next-line no-await-in-loop
+          await sleep(525);
+          console.log('waited 525ms for the inital requests to finish.');
+          this.models.forEach((model) => {
+            console.log(`model: ${model.prefix}`);
+            if (model.prefix !== paramViewPrefix) {
+              console.log('HIER');
+              this.handleGetIntersectedElemes(paramViewPrefix);
+            }
+          });
+          // }
+        })();
       });
-      view.onEvent('uncheckCheckbox', (paramViewPrefix) => {
-        this.views.forEach((v) => {
-          v.showCheckbox();
-        });
-        this.models.forEach((model) => {
-          if (model.prefix !== paramViewPrefix) {
-            model.redrawConnectedArtifacts();
-          }
-        });
-      });
+      // view.onEvent('uncheckCheckbox', (paramViewPrefix) => {
+      //   this.views.forEach((v) => {
+      //     v.showCheckbox();
+      //   });
+      //   this.models.forEach((model) => {
+      //     if (model.prefix !== paramViewPrefix) {
+      //       model.redrawConnectedArtifacts();
+      //     }
+      //   });
+      // });
 
-      view.onEvent('checkboxClicked', (paramViewPrefix) => {
-        this.views.forEach((v) => {
-          if (v.prefix !== paramViewPrefix) {
-            v.hideCheckbox();
-          }
-        });
-      });
+      // view.onEvent('checkboxClicked', (paramViewPrefix) => {
+      //   this.views.forEach((v) => {
+      //     if (v.prefix !== paramViewPrefix) {
+      //       v.hideCheckbox();
+      //     }
+      //   });
+      // });
 
       view.onEvent('updateTooltip', (params) => {
         const viewPrefix = params[0];
@@ -85,6 +119,17 @@ export default class Controller {
         this.views.forEach((view) => {
           if (view.prefix === modelPrefix) {
             view.updateConnectedElems(newData);
+          }
+        });
+      });
+
+      model.onEvent('intersectionDataChanged', (data) => {
+        const modelPrefix = data[0];
+        const newData = data[1];
+        console.log('Model has new data - controller has control.');
+        this.views.forEach((view) => {
+          if (view.prefix === modelPrefix) {
+            view.highlightIntersection(newData);
           }
         });
       });
@@ -116,18 +161,15 @@ export default class Controller {
     */
     this.filtersection
       .onEvent('filterCvssVersion', (checkboxStatus) => {
-        const [version2, version3] = [checkboxStatus[0], checkboxStatus[1]]; // bool values.
+        const [version2, version3, none] = checkboxStatus; // bool values.
 
         // filter is the filter-name in the backend.
-        const params = { filter: 'cvssVersion', v2: version2, v3: version3 };
+        const params = {
+          filter: 'cvssVersion', v2: version2, v3: version3, none,
+        };
         DataWareHouse.applyNewFilter(params)
           .then((filteredData) => {
             this.models.forEach((model) => {
-              console.log('');
-              console.log('');
-              console.log(filteredData);
-              console.log('');
-              console.log('');
               model.updateData(filteredData[model.prefix]);
               model.redrawConnectedArtifacts();
             });
@@ -187,6 +229,26 @@ export default class Controller {
               model.redrawConnectedArtifacts();
             });
           });
+      })
+      .onEvent('intersectionTargetChanged', (newTargetView) => {
+        this.views.forEach((v) => {
+          let newBool = false;
+
+          console.log(v.prefix);
+          console.log(newTargetView);
+          if (v.prefix === newTargetView) {
+            newBool = true;
+          }
+          // eslint-disable-next-line no-underscore-dangle
+          v._updateControlStatus('showIntersection', newBool);
+          // v.resetIntersectionClass();
+        });
+      })
+      .onEvent('resetAllIntersectedElem', () => {
+        this.views.forEach((v) => {
+          v.resetIntersectionClass();
+          v.fireClick();
+        });
       });
 
     this.initVis();
@@ -293,6 +355,7 @@ export default class Controller {
 
   // viewPrefix - where the event happened
   async handleGetIntersectedElemes(viewPrefix) {
+    console.log('handleGetIntersecedElemets');
     this.models.forEach((model) => {
       const modelPrefix = model.prefix;
       if (viewPrefix !== modelPrefix) {
