@@ -24,6 +24,7 @@
                         <!-- <button class="btn btn-primary" id="test">test</button> -->
                     </div>
                     <div id="app-view" class="row view-menu no-gutters"></div>
+                    <div id="app-bottom" class="row view-menu no-gutters"></div>
                 </div>
 
                 <!-- lib area -->
@@ -44,6 +45,7 @@
                 </div> -->
                     </div>
                     <div id="lib-view" class="row view-menu no-gutters"></div>
+                    <div id="lib-bottom" class="row view-menu no-gutters"></div>
                 </div>
 
                 <!-- vul area -->
@@ -52,8 +54,16 @@
                         <!-- <button class="btn btn-primary">test</button> -->
                     </div>
                     <div id="vul-view" class="row view-menu no-gutters"></div>
+                    <div id="vul-bottom" class="row view-menu no-gutters"></div>
                 </div>
-
+                
+                <!-- empty area -->
+                <div id="additionalInformation" class="col-md-2">
+                    <div id="addition-menu" class="row view-menu no-gutters">
+                        <!-- <button class="btn btn-primary">test</button> -->
+                    </div>
+                    <div id="additional-view" class="row view-menu no-gutters"></div>
+                </div>                
                 <div id="dependency-container"></div>
 
             </div>
@@ -106,14 +116,111 @@
         </button>
     <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
         <h6 class="dropdown-header">Exploitability Metrics</h6>
-        <button class="dropdown-item" type="button" id="av2">Access Vector (AV)</button>
-        <button class="dropdown-item" type="button" id="ac2">Access Complexity (AC)</button>
-        <button class="dropdown-item" type="button" id="au2">Authentication (Au) </button>
+        <button class="dropdown-item metric" type="button" id="av2">Access Vector (AV)</button>
+        <button class="dropdown-item metric" type="button" id="ac2">Access Complexity (AC)</button>
+        <button class="dropdown-item metric" type="button" id="au2">Authentication (Au) </button>
         <hr class="dropdown-divider">
         <h6 class="dropdown-header">Impact Metrics</h6>
-        <button class="dropdown-item" type="button" id="c2">Confidentiality (C) </button>
-        <button class="dropdown-item" type="button" id="i2">Integrity (I)</button>
-        <button class="dropdown-item" type="button" id="a2">Availability (A)</button>
+        <button class="dropdown-item metric" type="button" id="c2">Confidentiality (C) </button>
+        <button class="dropdown-item metric" type="button" id="i2">Integrity (I)</button>
+        <button class="dropdown-item metric" type="button" id="a2">Availability (A)</button>
+    </div>
+</script>
+
+<script id="template-view-orderings-app" type="text/template">
+    <div class="dropdown">
+    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="app-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         Orderings 
+        </button>
+    <div class="dropdown-menu orderings" aria-labelledby="app-orderings">
+        <h6 class="dropdown-header">Severity Filters</h6>
+        <button class="dropdown-item" type="button" id="app-min_cvssScore-o">Lowest CVSS score</button>
+        <button class="dropdown-item" type="button" id="app-max_cvssScore-o">Highest CVSS score</button>
+        <button class="dropdown-item" type="button" id="app-avg_severity-o">Average CVSS score</button>
+        <hr class="dropdown-divider">
+        <h6 class="dropdown-header">Other Metrics</h6>
+        <button class="dropdown-item" type="button" id="app-meta_vulas-o">Number of distinct vulnerabilitites</button>
+        <button class="dropdown-item" type="button" id="app-meta_vul_libs-o">Number of vulnerable Libraries</button>
+        <button class="dropdown-item" type="button" id="app-meta_numb_libs-o">Numb of Libraries</button>
+    </div>
+</div>
+</script>
+
+<script id="template-view-orderings-lib" type="text/template">
+    <div class="dropdown">
+    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="app-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         Orderings 
+        </button>
+    <div class="dropdown-menu orderings" aria-labelledby="app-orderings">
+        <h6 class="dropdown-header">Severity Filters</h6>
+        <button class="dropdown-item" type="button" id="lib-min_cvssScore-o">Lowest CVSS score</button>
+        <button class="dropdown-item" type="button" id="lib-max_cvssScore-o">Highest CVSS score</button>
+        <button class="dropdown-item" type="button" id="lib-avg_severity-o">Average CVSS score</button>
+        <hr class="dropdown-divider">
+        <h6 class="dropdown-header">Other Metrics</h6>
+        <button class="dropdown-item" type="button" id="lib-meta_vulas-o">Number of distinct vulnerabilitites in each library</button>
+        <button class="dropdown-item" type="button" id="lib-meta_affected_apps-o">Number of usages (in applications)</button>
+    </div>
+</div>
+</script>
+
+
+<script id="template-view-orderings-vul" type="text/template">
+    <div class="dropdown">
+    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="app-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         Orderings 
+        </button>
+    <div class="dropdown-menu orderings" aria-labelledby="app-orderings">
+        <h6 class="dropdown-header">Severity Filters</h6>
+        <button class="dropdown-item" type="button" id="vul-cvssScore-o">CVSS score (non-decreasing)</button>
+        <hr class="dropdown-divider">
+        <h6 class="dropdown-header">Other Metrics</h6>
+        <button class="dropdown-item" type="button" id="vul-cvssVersion-o">CVSS Version</button>
+        <button class="dropdown-item" type="button" id="vul-meta_affected_apps-o">Number of affected applications</button>
+    </div>
+</div>
+</script>
+
+<script id="template-view-color-app" type="text/template">
+<div class="dropdown">
+    <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="app-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         Color 
+        </button>
+    <div class="dropdown-menu color" aria-labelledby="app-color">
+        <h6 class="dropdown-header">Severity to Color</h6>
+        <button class="dropdown-item" type="button" id="app-min_cvssScore-c">Lowest CVSS score</button>
+        <button class="dropdown-item" type="button" id="app-max_cvssScore-c">Highest CVSS score</button>
+        <button class="dropdown-item" type="button" id="app-avg_severity-c">Average CVSS score</button>
+    </div>
+</div>
+</script>
+
+<script id="template-view-color-lib" type="text/template">
+    <div class="dropdown">
+        <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="app-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+             Color 
+            </button>
+        <div class="dropdown-menu color" aria-labelledby="lib-color">
+            <h6 class="dropdown-header">Severity to Color</h6>
+            <button class="dropdown-item" type="button" id="lib-min_cvssScore-c">Lowest CVSS score</button>
+            <button class="dropdown-item" type="button" id="lib-max_cvssScore-c">Highest CVSS score</button>
+            <button class="dropdown-item" type="button" id="lib-avg_severity-c">Average CVSS score</button>
+        </div>
+    </div>
+</script>
+
+<script id="template-view-color-vul" type="text/template">
+    <div class="dropdown">
+        <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="app-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+             Color 
+            </button>
+        <div class="dropdown-menu color" aria-labelledby="vul-color">
+            <h6 class="dropdown-header">Severity to Color</h6>
+            <button class="dropdown-item" type="button" id="vul-cvssScore-c">CVSS score</button>
+            <hr class="dropdown-divider">
+            <h6 class="dropdown-header">Other Metrics</h6>
+            <button class="dropdown-item" type="button" id="vul-meta_affected_apps-o">Affected Libraries</button>
+        </div>
     </div>
 </script>
 
@@ -123,16 +230,16 @@
        </button>
     <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
         <h6 class="dropdown-header">Exploitability Metrics</h6>
-        <button class="dropdown-item" type="button" id="av3">Attack Vector (AV)</button>
-        <button class="dropdown-item" type="button" id="ac3">Attack Complexity (AC)</button>
-        <button class="dropdown-item" type="button" id="pr3">Privileges Required (PR)</button>
-        <button class="dropdown-item" type="button" id="ui3">User Interaction (UI) </button>
+        <button class="dropdown-item metric" type="button" id="av3">Attack Vector (AV)</button>
+        <button class="dropdown-item metric" type="button" id="ac3">Attack Complexity (AC)</button>
+        <button class="dropdown-item metric" type="button" id="pr3">Privileges Required (PR)</button>
+        <button class="dropdown-item metric" type="button" id="ui3">User Interaction (UI) </button>
 
         <hr class="dropdown-divider">
         <h6 class="dropdown-header">Impact Metrics</h6>
-        <button class="dropdown-item" type="button" id="c3">Confidentiality (C) </button>
-        <button class="dropdown-item" type="button" id="i3">Integrity (I)</button>
-        <button class="dropdown-item" type="button" id="a3">Availability (A)</button>
+        <button class="dropdown-item metric" type="button" id="c3">Confidentiality (C) </button>
+        <button class="dropdown-item metric" type="button" id="i3">Integrity (I)</button>
+        <button class="dropdown-item metric" type="button" id="a3">Availability (A)</button>
         <hr class="dropdown-divider">
         <button class="dropdown-item" type="button" id="s3">Scope (S)</button>
     </div>

@@ -13,19 +13,46 @@ global filter_dict, active_filters
 active_filters = {
     
 }
-sortBy = 'avg_severity'
-color = 'avg_severity'
+
+sorter = {
+   'app': 'avg_severity',
+   'lib': 'avg_severity',
+   'vul': 'cvssScore'
+}
+
+colorMapping = {
+   'app': 'avg_severity',
+   'lib': 'avg_severity',
+   'vul': 'cvssScore'
+}
+#sortBy = 'avg_severity'
+#color = 'avg_severity'
 
 def add_filter(filter_name, parameter_list):
-    global active_filters, color, sortBy
+    global active_filters, colorMapping, sorter
     
+    model_list = ['app', 'lib', 'vul']
+
     print(parameter_list)
     if parameter_list == {}:
         remove_filter(filter_name)
+    
+    elif filter_name == 'ordering':
+       model = parameter_list['model']
+       newValue = parameter_list['value']
+       sorter[model] = newValue
+       print('new ordering: ' + newValue + ' for Model: ' + model)
+       model_list = [model]
+    elif filter_name == 'color':
+       model = parameter_list['model']
+       newValue = parameter_list['value']
+       colorMapping[model] = newValue
+       print('new color: ' + newValue + ' for Model: ' + model)
+       model_list = [model]
     else:     
         active_filters[filter_name] = parameter_list
     
-    return recalc_data()
+    return recalc_data(model_list)
 
 
 def remove_filter(filter_name):
@@ -41,8 +68,8 @@ def remove_all_filters():
     print('all filters are removed.')
 
 
-def recalc_data():
-   model_list = ['app', 'lib', 'vul']
+def recalc_data(model_list):
+   
    ret = {}
    for model in model_list:
        ret[model] = run_filters_on_dataset(model)
@@ -67,8 +94,8 @@ def run_filters_on_dataset(calling_model:str):
         df = df_returned
    if not df.empty: 
       print('alles nomal - df hat rows')
-      df = sort_df_by_column(calling_model, df, sortBy)
-      df = set_column_as_color(calling_model, df, color)
+      df = sort_df_by_column(calling_model, df)
+      df = set_column_as_color(calling_model, df)
       returnIds = []
       # each view uses different columns as the id for their objects.
       if modelId == 'app':
@@ -79,10 +106,13 @@ def run_filters_on_dataset(calling_model:str):
 
       if modelId == 'vul':
           df.rename(columns = {'cve': 'id'}, inplace = True)
-      
+
+      print(df) 
       returnIds = df[['id', 'color']].to_dict(orient='records')
    else:
       returnIds = {}
+
+    
    return returnIds
        
 
@@ -152,33 +182,38 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
       else:
          df_ret = pd.DataFrame()
          print(f'no app our lib contains this vulnerability version {myRegex} - seems like there is a Problem.')
+   
+  
   return df_ret
 
 
-def set_column_as_color(calling_model: str, df_param, column_name='avg_severity'):
+def set_column_as_color(calling_model: str, df_param):
+    global colorMapping
+    column_name = colorMapping[calling_model]
     print(f'{calling_model} called -> set_column_as_color with parameter: {column_name}')
     if calling_model == 'vul':
-       if column_name == 'avg_severity':
-           column_name = 'cvssScore'
        df_ret = df_param.rename(columns = {column_name:'color'}, inplace = False)
     
     if calling_model == 'app' or calling_model == 'lib': 
        df_ret = df_param.rename(columns = {column_name:'color'}, inplace = False)
-    
+    print(df_ret.columns) 
     return df_ret
 
-def sort_df_by_column(calling_model, df_param, criteria = 'avg_severity'):
+def sort_df_by_column(calling_model, df_param):
+    global sorter
     print(df_param.columns)
+    criteria = sorter[calling_model]
     print(f'{calling_model} called -> sort_df_by_column: {criteria}') 
+    
     if calling_model == 'vul':
-           criteria = 'cvssScore'
-           df_ret = df_param.sort_values(by=[criteria, 'cve'], inplace=False)
+           
+           df_ret = df_param.sort_values(by=[str(criteria), 'cve'], inplace=False)
     
     if calling_model == 'lib':
-       df_ret = df_param.sort_values(by=[criteria, 'libDigest'], inplace=False)
+       df_ret = df_param.sort_values(by=[str(criteria), 'libDigest'], inplace=False)
     
     if calling_model == 'app':
-       df_ret = df_param.sort_values(by=[criteria, 'gav'], inplace=False)
+       df_ret = df_param.sort_values(by=[str(criteria), 'gav'], inplace=False)
     
 
     

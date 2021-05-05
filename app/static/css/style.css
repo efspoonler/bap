@@ -25,9 +25,10 @@ body {
   opacity: .5;
 } */
 rect[class *= "connected"]{
-  fill: red !important;
-  /* opacity: .3; */
-  /* pointer-events: none; */
+  /* stroke: rgb(89, 156, 70) !important; */
+  fill-opacity: 1.0 !important;
+  stroke-opacity: 1.0 !important;
+  /* stroke-width: 2; */
 }
 
 rect.default.connected.clicked{
@@ -41,8 +42,9 @@ rect.foundBySearch{
   fill: black  !important;
 
 }
-rect.default{
-  fill: white;
+rect.default.clicked{
+  stroke: rgb(89, 156, 70) !important;
+  stroke-width: 2;
 } 
 
 rect.cvssScore-selected{

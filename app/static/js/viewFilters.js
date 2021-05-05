@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import EventEmitter from './events.js';
 import {
-  colorscales, dynamicDropdowns,
+  colorscales,
 } from './tools/helpers.js';
 
 class ViewFilters extends EventEmitter {
@@ -652,7 +652,7 @@ class ViewFilters extends EventEmitter {
 
   addDropdownList() {
     console.log(this);
-    d3.selectAll('.dropdown-item')
+    d3.selectAll('.dropdown-item.metric')
       .on('click', (e) => {
         const templateAddNewDropdown = document.getElementById('template-metrics-values').innerHTML;
         const templateList = document.getElementById('template-dynamic-list-item').innerHTML;

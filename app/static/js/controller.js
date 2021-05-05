@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { ArtifactView } from './view.js';
 import { DataWareHouse } from './model.js';
 import ViewFilters from './viewFilters.js';
@@ -14,6 +15,8 @@ export default class Controller {
     // track in which view the user selected an artifact first.
     // is used as a stack.
     this.firstSelectedView = [];
+    // flag - we need to redraw all views artifacts if a user selected a new coloring.
+    this._rmAllArtifact = false;
 
     // create the models - for each view, we have one model.
     modelList.forEach((model) => {
@@ -57,6 +60,39 @@ export default class Controller {
         if (callingView === 'app') {
           createDependecyGraph();
         }
+      });
+      view.onEvent('newOrdering', (args) => {
+        const callingView = args[0];
+        const selectedOrdering = args[1];
+        console.log(selectedOrdering);
+        const model = this.getModel(callingView);
+        const params = {
+          model: callingView,
+          filter: 'ordering',
+          value: selectedOrdering,
+        };
+        DataWareHouse.applyNewFilter(params)
+          .then((filteredData) => {
+            model.updateData(filteredData[model.prefix]);
+            model.redrawConnectedArtifacts();
+          });
+      });
+      view.onEvent('newColorMapping', (args) => {
+        const callingView = args[0];
+        const selectedColorMapping = args[1];
+        console.log(selectedColorMapping);
+        const model = this.getModel(callingView);
+        const params = {
+          model: callingView,
+          filter: 'color',
+          value: selectedColorMapping,
+        };
+        this._rmAllArtifact = true;
+        DataWareHouse.applyNewFilter(params)
+          .then((filteredData) => {
+            model.updateData(filteredData[model.prefix]);
+            model.redrawConnectedArtifacts();
+          });
       });
     });
 
@@ -149,8 +185,29 @@ export default class Controller {
         const view = this.getView(modelId);
         console.log(modelId);
         view.dataSet = data;
-        view.removeAllArtifacts();
-        view.render();
+
+        if (this._rmAllArtifact) {
+          view.removeAllArtifacts();
+          /* use a new colorscale. */
+          // const newColorScale = 'goodall';
+          // this._rmAllArtifact = false;
+          // view.render(newColorScale);
+          if (modelId === 'vul') {
+            let newColorScale = 'cve';
+            if (view.currentlySeletedColorMapping() === 'meta_affected_apps') {
+              newColorScale = 'linear';
+            }
+
+            this._rmAllArtifact = false;
+            view.render(newColorScale);
+          } else {
+            this._rmAllArtifact = false;
+            view.render();
+          }
+        } else {
+          view.render();
+        }
+
         // model.getintersection();
       });
     });
@@ -326,7 +383,7 @@ export default class Controller {
       this.views.forEach((v) => {
         v.edgeLen(viewsMaxEdgeLen);
         console.log('Ärender Artifacts');
-        v.render();
+        v.render('cve'); // init color-sclae => cve
       });
 
       DataWareHouse.initFilterSectionSeverityChart()

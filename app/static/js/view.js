@@ -15,6 +15,7 @@ class View extends EventEmitter {
     this._menuDivId = `${root}-menu`;
     this._startTime = 0;
     this._stopTime = 0;
+    this._currentColorScale = '';
 
     this.MARGINS = {
       top: 20,
@@ -54,82 +55,34 @@ class View extends EventEmitter {
   }
 
   initViewControlls() {
-    const checkBoxId = `${this._menuDivId}-checkbox`;
-    this._controlStatus[checkBoxId] = false;
+    const checkBoxId = `${this._menuDivId}-orderings`;
+    // this._controlStatus[checkBoxId] = false;
     const textSearchId = `${this._menuDivId}-search`;
+    const templateOrderings = document.getElementById(`template-view-orderings-${this._prefix}`).innerHTML;
+    const templateColor = document.getElementById(`template-view-color-${this._prefix}`).innerHTML;
+    const orderingsDiv = d3.select(`#${this._prefix}-menu`)
+      .append('div')
+      .attr('id', 'entry input-group col-xs-12');
+    const bottomDiv = d3.select(`#${this._prefix}-bottom`).append('div'); // .attr('class', 'btn-group');
+    bottomDiv
+      .html(templateColor + templateOrderings);
+    bottomDiv
+      .select('div .dropdown-menu.orderings')
+      .on('click', (event) => {
+        // id has the form viewprefix-ordering-o. Example: app-cves-o
+        const [, selectedOrdering] = event.target.id.split('-'); // ignoring the first eleme in the split array.
+        this.emit('newOrdering', [this._prefix, selectedOrdering]);
+      });
 
-    // const checkBoxDiv = d3.select(`#${this._menuDivId}`)
-    //   .append('div')
-    //   .attr('id', `${this._menuDivId}-div-checkbox`)
-    //   .attr('class', 'form-check no-gutters my-form-check-modification');
-    //   // .attr('style', 'display: true');
-
-    // checkBoxDiv
-    //   .append('input')
-    //   .attr('class', 'from-check-input')
-    //   .attr('type', 'checkbox')
-    //   .attr('id', checkBoxId)
-    //   .on('click', () => {
-    //     // We count the number of clicked elements inside each ArtifacView.
-    //     let numbOfClickedElems = 0;
-
-    //     /*
-    //      * randomClickedElemsId contains the id of a clicked Artifact.
-    //      * this id will triggering the redrawing of all selected elemets when
-    //      * the checkbox is not checked anymore. (quick and dirty)
-    //      *
-    //      */
-    //     // const randomClickedElemsId = null;
-    //     const checkboxId = `${this._menuDivId}-checkbox`;
-    //     const clickedElemIds = [];
-
-    //     // update the datastructure with the elements state.
-    //     this._updateControlStatus(checkBoxId, d3.select(`#${checkboxId}`).property('checked'));
-
-    //     // if (this._controlStatus[checkBoxId]) {
-    //     //   this.emit('checkboxClicked', this._prefix);
-    //     // }
-    //     d3.select(`#${this._viewDivId}-svg`)
-    //       .selectAll('rect')
-    //       // need anonym function to have the right scope! (arrow-func does not work)!
-    //       .each(function (d) {
-    //         if (d3.select(this).classed('clicked')) {
-    //           numbOfClickedElems += 1;
-    //           clickedElemIds.push(d.id);
-    //         }
-    //       });
-
-    //     /*
-    //      * _controlStatu knows if the checkbox is currently checked.
-    //      *
-    //      *
-    //      *
-    //      */
-    //     if (this._controlStatus[checkboxId]) { // case: the checkbox is checked
-    //       if (numbOfClickedElems >= 2) {
-    //         this.emit('checkboxClicked', this._prefix);
-    //         this.emit('displayIntersection', this._prefix);
-    //       } else {
-    //         alert(`please select at least two elements in this View. You selected just: ${numbOfClickedElems} elements.`);
-    //         // reverse changes
-    //         d3.select(`#${this._menuDivId}-checkbox`)
-    //           .property('checked', false);
-    //         this._updateControlStatus(checkBoxId, false);
-    //       }
-    //     } else { // case: the checkbox was un-checked.
-    //       console.log('checkbox not checked anymore');
-    //       if (clickedElemIds.length > 0) {
-    //         this.emit('uncheckCheckbox');
-    //         // this.emit('clickArtifact', [this._prefix, clickedElemIds.pop()]); // quick and dirty
-    //       }
-    //     }
-    //   });
-
-    // checkBoxDiv
-    //   .append('label')
-    //   .attr('class', 'form-check-label')
-    //   .text(' checkbox')
-    //   .attr('for', checkBoxId);
+    bottomDiv
+      .select('div .dropdown-menu.color')
+      .on('click', (event) => {
+      // id has the form viewprefix-ordering-o. Example: app-cves-o
+        const [, selectedColormapping] = event.target.id.split('-'); // ignoring the first eleme in the split array.
+        console.log(selectedColormapping);
+        this._controlStatus.color = selectedColormapping;
+        this.emit('newColorMapping', [this._prefix, selectedColormapping]);
+      });
 
     /* Init Search function */
     d3.select(`#${this._menuDivId}`)
@@ -144,7 +97,6 @@ class View extends EventEmitter {
       .attr('class', 'form-control');
 
     d3.select(`#${textSearchId}`)
-    // .on('change', () => { console.log('change'); });
       .on('input onclick', () => { // views can filter on their own. Do not have to emit an event!
         // onclick - chrome event. little blue cross-icon
         const currentInputValue = d3.select(`#${this._menuDivId}-search`)
@@ -152,7 +104,7 @@ class View extends EventEmitter {
           .value
           .toLowerCase(); // case of the input is 'ignored'
 
-        const dynamicOpacity = 0.2;
+        const dynamicOpacity = 0.35;
         // If the search field is empty. we have an empty string, which machtes every artifact id.
         if (currentInputValue.length >= 1) {
           d3.selectAll(`.${this._viewDivId}-g`)
@@ -173,26 +125,12 @@ class View extends EventEmitter {
             .classed('foundBySearch', false)
             .attr('style', `opacity: ${dynamicOpacity}`);
           // .selectAll('rect')
-          // .attr('stroke', (d) => { console.log(d3.select(`${d.id}`)); });
         } else { // search field is empty.
           d3.selectAll(`.${this._viewDivId}-g`)
             .attr('style', 'opacity:1')
             .classed('foundBySearch', false);
         }
       });
-  }
-
-  uncheckCheckbox() {
-    d3.select(`#${this._menuDivId}-checkbox`).property('checked', false);
-    this._updateControlStatus(`${this._menuDivId}-checkbox`, false); // update the datastructure with the elements state.
-  }
-
-  hideCheckbox() {
-    d3.select(`#${this._menuDivId}-div-checkbox`).selectAll('*').attr('style', 'visibility:hidden'); // selects all child nodes of the ...-div-checkbox div.
-  }
-
-  showCheckbox() {
-    d3.select(`#${this._menuDivId}-div-checkbox`).selectAll('*').attr('style', 'visibility:true'); // selects all child nodes of the ...-div-checkbox div.
   }
 
   /**
@@ -213,7 +151,8 @@ class ArtifactView extends View {
   initView() {
     const viewDiv = d3.select(`#${this._viewDivId}`);
     this._width = viewDiv.node().offsetWidth;
-    this._height = window.innerHeight - $('#nav-bar').outerHeight(true) - $('#above-vis').outerHeight(true) - $('.view-menu').outerHeight(true) - this.MARGINS.bottom;
+    // when creating the first view, $('.view-menu').outerHeight(true) is 0
+    this._height = window.innerHeight - $('#nav-bar').outerHeight(true) - $('#above-vis').outerHeight(true) - 70 - this.MARGINS.bottom - 40;
     this._rootSvg = viewDiv
       .append('svg')
       .attr('id', () => `${this._viewDivId}-svg`) // svg that contains all g-Artifacts
@@ -224,7 +163,7 @@ class ArtifactView extends View {
     this.initViewControlls();
   }
 
-  render() {
+  render(scaleSelection = '') {
     // this section defines two helper functions which are needed for the placement of the rects
     const artifactPerRow = Math.floor(this._width / this._edgeLen);
     let heightTracker = 0 - this._edgeLen;
@@ -239,13 +178,16 @@ class ArtifactView extends View {
       if (i % artifactPerRow === 0) { heightTracker += this._edgeLen; }
       return heightTracker;
     };
-
+    if (scaleSelection !== '') {
+      this._currentColorScale = colorscales[scaleSelection];
+    }
     this._rootSvg
       .selectAll('g')
     // key function - return a unique id. Each array elem stays joined to the same DOM elem.
       .data(this._dataSet, (d) => d.id)
       .join(
         (enter) => {
+          console.log(enter);
           const gs = enter
             .append('g')
             .attr('class', `${this._viewDivId}-g`); // each artifact has its own group.
@@ -260,10 +202,10 @@ class ArtifactView extends View {
             // that add a small padding of 1px between each elements. + 1px for the border.
             .attr('width', this._edgeLen - 2)
             .attr('height', this._edgeLen - 2)
-            .attr('stroke', (d) => colorscales.cve(d.color))
+            .attr('stroke', (d) => this._currentColorScale(d.color))
             .attr('stroke-opacity', 0.7)
-            .attr('style', (d) => `fill:${colorscales.cve(d.color)}`)
-            .attr('fill-opacity', 0.5);
+            .attr('style', (d) => `fill:${this._currentColorScale(d.color)}`)
+            .attr('fill-opacity', 0.35);
 
           gs
 
@@ -287,7 +229,7 @@ class ArtifactView extends View {
                     .filter((e) => e !== attachedData.id);
                   clicked
                     .classed('clicked', false)
-                    .attr('fill-opacity', 0.5)
+                    .attr('fill-opacity', 0.35)
                     .attr('stroke-opacity', 0.7);
                 } else {
                   this._currentlyClickedElemsId.push(attachedData.id);
@@ -354,14 +296,18 @@ class ArtifactView extends View {
           return gs;
         },
         (update) => {
+          console.log(update);
           update
             .selectAll('.clicked')
             .attr('fill-opacity', 1);
+
+          update
+            .selectAll('rect')
+            .attr('stroke', (d) => this._currentColorScale(d.color))
+            .attr('style', (d) => `fill:${this._currentColorScale(d.color)}`);
+
           return update;
         }, // console.log(update);
-
-        // console.log(update.attr('style'));
-        // d3.
 
         (exit) => {
           console.log('we exit');
@@ -446,15 +392,15 @@ class ArtifactView extends View {
           data.meta_vul_libs,
           data.meta_vulas];
         dynamicHtml += '<table style="width:50%; align:center"><tr><th>number of</th><th>count</th></tr>';
-        dynamicHtml += `<tr><td>libraries</td><td>${libsTotal}</td></tr>`;
-        dynamicHtml += `<tr><td>Numb of vulnerable libraries</td><td>${libsAffected}</td></tr>`;
+        dynamicHtml += `<tr><td>Libraries</td><td>${libsTotal}</td></tr>`;
+        dynamicHtml += `<tr><td>Vulnerable libraries</td><td>${libsAffected}</td></tr>`;
         dynamicHtml += `<tr><td>Distinct CVEs:</td><td>${numbVulas}</td></tr>`;
       } else { // lib view
         const [numbVulas, appsAffected, description] = [data.meta_vulas,
           data.meta_affected_apps,
           data.description];
         dynamicHtml += '<table style="width:100%; align:left"><tr><th>number of       </th><th>count</th></tr>';
-        dynamicHtml += `<tr><td>Numb of apps including this lib</td><td>${appsAffected}</td></tr>`;
+        dynamicHtml += `<tr><td>Apps including this lib</td><td>${appsAffected}</td></tr>`;
         dynamicHtml += `<tr><td>Distinct CVEs:</td><td>${numbVulas}</td></tr>`;
       }
     } else { // vul view
@@ -469,7 +415,6 @@ class ArtifactView extends View {
       dynamicHtml += `<tr><td>Affected applications</td><td>${affectedApps}</td></tr>`;
       dynamicHtml += `<tr><td>Vector</td><td>${vector}</td></tr>`;
       dynamicHtml += `<tr><td>Version</td><td>${version}</td></tr>`;
-      console.log(vector);
       // dynamicHtml += `<tr><td>description</td><td>${description}</td></tr>`;
     }
     // if(data.meta_affected_apps === 'undefined'){ //we kn
@@ -488,11 +433,15 @@ class ArtifactView extends View {
 
     artifacSelection
       .filter((d) => !(idArray.includes(d.id))) // select all elements that are not included.
-      .attr('style', 'opacity:0.2');
+      .attr('style', 'opacity:0.35');
 
     artifacSelection
       .filter((d) => idArray.includes(d.id)) // select all elements that are not included.
       .attr('style', 'opactiy:1');
+  }
+
+  currentlySeletedColorMapping(currentlySelectedMapping) {
+    return this._controlStatus.color;
   }
 
   /**
@@ -509,9 +458,9 @@ class ArtifactView extends View {
 
   // eslint-disable-next-line class-methods-use-this
   removeAllArtifacts() {
-    // d3.select(`#${this._viewDivId}-svg`)
-    //   .selectAll('*')
-    //   .remove();
+    d3.select(`#${this._viewDivId}-svg`)
+      .selectAll('*')
+      .remove();
   }
 
   edgeLen(len) {
