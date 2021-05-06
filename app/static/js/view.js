@@ -163,7 +163,7 @@ class ArtifactView extends View {
     this.initViewControlls();
   }
 
-  render(scaleSelection = '') {
+  render(scaleSelection = '', tansitionTime = 2500) {
     // this section defines two helper functions which are needed for the placement of the rects
     const artifactPerRow = Math.floor(this._width / this._edgeLen);
     let heightTracker = 0 - this._edgeLen;
@@ -322,7 +322,7 @@ class ArtifactView extends View {
       )
 
       .call((s) => {
-        s.transition().duration(2000)
+        s.transition().duration(tansitionTime)
           .attr('transform', (d, i) => `translate(${gx(d, i)}, ${gy(d, i)})`);
       });
 

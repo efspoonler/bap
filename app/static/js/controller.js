@@ -341,6 +341,10 @@ export default class Controller {
   initVis() {
     let viewsMaxEdgeLen = [];
     const findMinEdgeLen = [];
+    const templateSpinner = document.getElementById('template-spinner').innerHTML;
+    const visRow = document.getElementById('viscontainer');
+    const visRowWidth = visRow.clientWidth;
+    const visRowHeight = visRow.clientHeight;
 
     /**
      * Dirty workaround. The problem is, that we need to wait for all models to be loaded.
@@ -349,6 +353,16 @@ export default class Controller {
      * The workaround uses an async function that waits in a loop until all models are ready.
      */
     (async () => {
+      /* Loading Spinner + Div overlapping the whole application */
+      const spinnerContainer = d3.select('#visRow')
+        .append('div')
+        .attr('id', 'deleteAfterDataIsLoaded')
+        .attr('style', `z-index: 1; display:flex; position: absolute; height:${visRowHeight}px; width:${visRowWidth}px; background-color: gray; opacity:0.75`)
+        .append('div')
+        .attr('style', `display:flex; position: absolute; margin-left:${visRowWidth / 1.75}px; margin-top:${visRowHeight / 2 - 70}px;`);
+      spinnerContainer
+        .html(templateSpinner);
+
       // eslint-disable-next-line no-restricted-syntax
       let allDatasetsAreLoaded = false;
       while (!allDatasetsAreLoaded) {
@@ -383,7 +397,7 @@ export default class Controller {
       this.views.forEach((v) => {
         v.edgeLen(viewsMaxEdgeLen);
         console.log('Ärender Artifacts');
-        v.render('cve'); // init color-sclae => cve
+        v.render('cve', 0); // init color-sclae => cve +
       });
 
       DataWareHouse.initFilterSectionSeverityChart()
@@ -391,7 +405,15 @@ export default class Controller {
           console.log(data);
           this.filtersection.severityFilter(data);
         });
-    })();
+    })()
+    // animation of the loading spinner
+      .then(() => {
+        d3.select('#deleteAfterDataIsLoaded')
+          .transition()
+          .style('opacity', 0)
+          .duration(3000)
+          .remove(); // remove the element
+      });
   }
 
   async handleClickedSingleArtifact(viewPrefix, artifactId) {
