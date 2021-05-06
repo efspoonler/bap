@@ -84,7 +84,10 @@ def init_vis(callingModel, load_pickle_files=False):
          lib_init_data_df = lib_df[['libDigest', 'avg_severity', 'meta_vulas' ]].copy() #libDigest
          lib_tooltip_df = lib_df[['libDigest',  'libId',  'meta_affected_apps', 'meta_vulas', 'avg_severity', 'min_cvssScore',
        'max_cvssScore']].copy()
+         
 
+         # the libId is not unique! --> see: print(lib_tooltip_df[lib_tooltip_df.duplicated(['id'], keep=False)]['id'])
+         #hence we cannot use it as our index.
          lib_tooltip_df.rename(columns={'libDigest': 'id', 'libId': 'name'}, inplace=True)
          lib_tooltip_df.set_index('id', inplace=True)
 

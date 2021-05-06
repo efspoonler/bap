@@ -167,17 +167,47 @@ class ArtifactView extends View {
     // this section defines two helper functions which are needed for the placement of the rects
     const artifactPerRow = Math.floor(this._width / this._edgeLen);
     let heightTracker = 0 - this._edgeLen;
+    let artifactDimWidth = this._edgeLen - 2;
+    let artifactDimHeight = this._edgeLen - 2;
     let rowTracker = 0;
-
-    const gx = (d, i) => {
+    let gx;
+    let gy;
+    let flagListDisplay = false;
+    gx = (d, i) => {
       if (i % artifactPerRow === 0) { rowTracker = this._edgeLen; }
       const xPos = rowTracker * (i % artifactPerRow);
       return xPos;
     };
-    const gy = (d, i) => {
+    gy = (d, i) => {
       if (i % artifactPerRow === 0) { heightTracker += this._edgeLen; }
       return heightTracker;
     };
+
+    /* Artifacts as List.
+    * Idea: Check if the number of datapoints visible in the respectiv view can be displayed as a list.
+    *
+    *
+    */
+    // each List entry needs 2x the height of an artifact.
+    if (this._dataSet.length * (2 * this._edgeLen) <= this._height) {
+      heightTracker = 0 - 2 * this._edgeLen;
+      gx = (d, i) => {
+        // if (i % artifactPerRow === 0) { rowTracker = this._edgeLen; }
+        // const xPos = rowTracker * (i % artifactPerRow);
+        const xPos = 0;
+        return xPos;
+      };
+      gy = (d, i) => {
+        // if (i % artifactPerRow === 0) { heightTracker += this._edgeLen; }
+        heightTracker += 2 * this._edgeLen;
+        return heightTracker;
+      };
+      artifactDimWidth = this._width;
+      artifactDimHeight = 2 * this._edgeLen;
+
+      flagListDisplay = true;
+    }
+
     if (scaleSelection !== '') {
       this._currentColorScale = colorscales[scaleSelection];
     }
@@ -200,8 +230,8 @@ class ArtifactView extends View {
             .attr('rx', '3px')
             // -1 because we use a <g> elem to translate rectangles,
             // that add a small padding of 1px between each elements. + 1px for the border.
-            .attr('width', this._edgeLen - 2)
-            .attr('height', this._edgeLen - 2)
+            .attr('width', artifactDimWidth)
+            .attr('height', artifactDimHeight)
             .attr('stroke', (d) => this._currentColorScale(d.color))
             .attr('stroke-opacity', 0.7)
             .attr('style', (d) => `fill:${this._currentColorScale(d.color)}`)
@@ -221,7 +251,9 @@ class ArtifactView extends View {
               console.log(this._stopTime);
 
               if (timeElapsed <= 500) {
-                const clicked = d3.select(clickedElem.target);
+                // if the artifacts are presented as a List, a user could also click on the corresponding text.
+                // We always want to work on the 'rect element, hence we select the enclosing 'g' first
+                const clicked = d3.select(clickedElem.target.parentElement).select('rect');
 
                 if (clicked.classed('clicked')) { // check if the class string contains 'clicked'.
                   // In ECMA6 remove elemId from array
@@ -303,8 +335,30 @@ class ArtifactView extends View {
 
           update
             .selectAll('rect')
+            .attr('width', artifactDimWidth)
+            .attr('height', artifactDimHeight)
             .attr('stroke', (d) => this._currentColorScale(d.color))
             .attr('style', (d) => `fill:${this._currentColorScale(d.color)}`);
+
+          if (flagListDisplay) {
+            // update
+            //   .append('text')
+            //   .attr('dy', 2 * this._edgeLen - 2)
+            //   .attr('class', 'text label')
+            // // .style('font-size', '5px')
+            //   // .style('font-size', () => `${Math.min(this.edgeLen, (this.edgeLen) / (2) - 1)}px`)
+            //   .attr('dx', '1');
+            const idArray = [];
+            update
+              .each((d) => {
+                idArray.push(d.id);
+              });
+
+            this.emit('getListsTextValues', [this._prefix, idArray]);
+          } else {
+            d3.selectAll('.text.label')
+              .remove();
+          }
 
           return update;
         }, // console.log(update);
@@ -339,6 +393,20 @@ class ArtifactView extends View {
       .on('click', () => {
         this.clickIntersection();
       });
+  }
+
+  displayTextinList(data) {
+    const idArray = Object.keys(data);
+
+    d3.selectAll(`.${this._viewDivId}-g`)
+      .filter((d) => idArray.includes(d.id))
+      .append('text')
+      .attr('dy', 2 * this._edgeLen - 2)
+      .attr('class', 'text label')
+    // .style('font-size', '5px')
+    // .style('font-size', () => `${Math.min(this.edgeLen, (this.edgeLen) / (2) - 1)}px`)
+      .attr('dx', '1')
+      .text((d) => data[d.id].name);
   }
 
   resetIntersectionClass() {

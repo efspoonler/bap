@@ -94,6 +94,12 @@ export default class Controller {
             model.redrawConnectedArtifacts();
           });
       });
+      view.onEvent('getListsTextValues', (args) => {
+        const callingView = args[0];
+        const arrayOfArtifactIds = args[1];
+        const model = this.getModel(callingView);
+        const retValue = model.getTextValues(arrayOfArtifactIds);
+      });
     });
 
     this.views.forEach((view) => {
@@ -110,7 +116,6 @@ export default class Controller {
           this.models.forEach((model) => {
             console.log(`model: ${model.prefix}`);
             if (model.prefix !== paramViewPrefix) {
-              console.log('HIER');
               this.handleGetIntersectedElemes(paramViewPrefix);
             }
           });
@@ -183,7 +188,6 @@ export default class Controller {
         const modelId = dataObject[0];
         const data = dataObject[1];
         const view = this.getView(modelId);
-        console.log(modelId);
         view.dataSet = data;
 
         if (this._rmAllArtifact) {
@@ -209,6 +213,14 @@ export default class Controller {
         }
 
         // model.getintersection();
+      });
+
+      model.onEvent('updateListWithText', (dataObject) => {
+        const modelId = dataObject[0];
+        const textDataObj = dataObject[1];
+        const view = this.getView(modelId);
+
+        view.displayTextinList(textDataObj);
       });
     });
 

@@ -168,7 +168,6 @@ class DataWareHouse extends Model {
      all keys of clicked elems in the respective view.
     */
     const connectedKeys = Object.keys(this._data.connected[viewPrefix]);
-    console.log(connectedKeys);
     const path = this._data.connected[viewPrefix];
 
     /*
@@ -176,12 +175,9 @@ class DataWareHouse extends Model {
      are collected in the 'intersection' array.
     */
     let intersection = [];
-    console.log(path);
-    console.log('\n');
     if (connectedKeys.length >= 2) {
       // deep copy of one clicked Elemnts connected elements. (pop removes last elem and returns it)
       intersection = JSON.parse(JSON.stringify(path[connectedKeys.pop()]));
-      console.log(connectedKeys);
       // TODO: who is resposible for the case: just one element is selected?
       // - The loop will never start! return value would be false.
 
@@ -194,8 +190,6 @@ class DataWareHouse extends Model {
         const currentKey = connectedKeys.pop();
         // update the intersection array,
         // by removing any property that does not occure in both arrays
-        console.log('\ncurrentKey ');
-        console.log(path[currentKey]);
 
         intersection = intersection.filter((value) => path[currentKey].includes(value));
       }
@@ -279,6 +273,29 @@ class DataWareHouse extends Model {
 
   get allData() {
     return this._data;
+  }
+
+  getTextValues(arrayOfArtifactIds) {
+    const artifactText = {};
+    arrayOfArtifactIds.forEach((id) => {
+      let fullName = this._data.tooltip[id].name;
+      // No processing is needed for the CVE name.
+      if (!(fullName.startsWith('CVE') || fullName.startsWith('null'))) {
+        // just take the artifact name.
+        const [, artifact, version] = fullName.split(':');
+        // maybe modify it to "artifact-version.jar"
+        if (this._prefix === 'lib') {
+          fullName = `${artifact}-${version}.jar`;
+        } else {
+          fullName = artifact;
+        }
+      }
+      artifactText[id] = {
+        name: fullName,
+      };
+    });
+
+    this.emit('updateListWithText', [this._prefix, artifactText]);
   }
 
   getintersection() {
