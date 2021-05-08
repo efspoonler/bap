@@ -1,3 +1,7 @@
+/*
+* work in progress. This functionality is called when a user clicks and holds an artifact
+* for more than 500ms.
+*/
 function removeDependencyGraph() {
   d3.select('#dependency-canvas')
     .remove();

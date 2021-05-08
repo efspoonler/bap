@@ -8,5 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterSectionRoot = 'filterSection';
 
   createTooltip();
+  // eslint-disable-next-line no-unused-vars
   const controller = new Controller(models, views, filterSectionRoot);
 });

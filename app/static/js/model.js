@@ -1,68 +1,29 @@
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable max-classes-per-file */
 import EventEmitter from './events.js';
+
 /**
- * Base class for all models
+ * The DataWareHouse contains each views data.
+ * It is responsible to get and store needed data from the backend.
+ * @extends EventEmitter
  */
-class Model extends EventEmitter {
-  constructor() {
+class DataWareHouse extends EventEmitter {
+  /**
+   * @param {String} name - prefix coresponds to the view prefix
+   * @param {String} url - path structure for the respective model.
+   */
+  constructor(name, url) {
     super();
     // array of change event listeners
     this._listerners = [];
-  }
-
-  /**
-     * Add a listener function that will be called when the model changes
-     * @param {function} listener
-     * @returns {Model}
-     */
-  // addChangeListener(listener) {
-  //   // push the new listener function into the array
-  //   this._listerners.push(listener);
-  //   return this;
-  // }
-
-  /**
-     * Removes a change listener function
-     * @param {function} listener
-     * @returns {Model}
-     */
-  // removeChangeListener(listener) {
-  //   this._listerners = this._listerners.filter((l) => l !== listener);
-  //   return this;
-  // }
-
-  /**
-     * Raises an change event
-     * @returns {Model}
-     */
-  // raisChange() {
-  //   console.log('dingensBumens');
-  //   this._listerners.forEach((listener) => listener());
-  //   return this;
-  // }
-
-  /**
-     *
-     * @param {Model} model
-     * @returns {Model}
-     */
-  // bubbleChange(model) {
-  //   model.addChangeListener(() => this.raisChange());
-  //   return this;
-  // }
-}
-
-class DataWareHouse extends Model {
-  constructor(name, url) {
-    super();
 
     this._name = name;
-    [this._prefix] = name.split('-'); // array destructing. Takes the first elem of the array and assigns it to the variable this._prefix.
+    // array destructing. First elem of the array is assigned to the variable <this._prefix>.
+    [this._prefix] = name.split('-');
+    // datastrucutre for storing data dynamically.
     this._data = {
       init: [],
-      visibleData: [],
-      tooltip: {}, // conta ints the tooltip information
+      visibleData: [], // contains all information about artifact currently visible.
+      tooltip: {}, // contains the tooltip information
       connected: {
         app: {},
         lib: {},
@@ -76,9 +37,13 @@ class DataWareHouse extends Model {
     this.asyncInitData();
   }
 
+  /**
+   *
+   * @returns {Promise}
+   */
   static async initFilterSectionSeverityChart() {
     return (async () => {
-      const path = '/vis/filter/severityfilterinit'; // create the url dynamically.
+      const path = '/vis/filter/severityfilterinit'; // filter url.
       const response = await fetch(path);
       if (response.status !== 200) { // error handling with status code
         console.log(`Problem in model.js::loading initial data. Status code: ${response.status}`);
@@ -88,6 +53,11 @@ class DataWareHouse extends Model {
     })();
   }
 
+  /**
+   * Each filter is specified by its name and its parameters.
+   * @param {Object} filterObj - contains filters name as well as parameters
+   * @returns {Promise}
+   */
   static async applyNewFilter(filterObj) {
     return (async () => {
       const query = new URLSearchParams(filterObj);
@@ -103,17 +73,11 @@ class DataWareHouse extends Model {
     })();
   }
 
-  // static numbOfLoadedDataSets = 0;
-
-  get name() {
-    return this._name;
-  }
-
-  get prefix() {
-    return this._prefix;
-  }
-
-  // this._data.visible contains the current data visible in the front-end.
+  /**
+   *
+   * @param {Number} min
+   * @param {Number} max
+   */
   applyRangeFilterToData(min, max) {
     const selectedData = [];
 
@@ -134,6 +98,12 @@ class DataWareHouse extends Model {
     this.updateData(selectedData);
   }
 
+  /**
+   *
+   * @param {String} connectedTo - Id of an element
+   * @param {Object} elemIdArray - [String,..] all artifact ids to which connectedTo is connected.
+   * @param {String} viewPrefix - calling View.
+   */
   setConnected(connectedTo, elemIdArray, viewPrefix) {
     // 1st update Model.
     const path = this._data.connected[viewPrefix];
@@ -161,8 +131,11 @@ class DataWareHouse extends Model {
     this.emit('conectedElemsChanged', [this._prefix, updateArtifacts]);
   }
 
+  /**
+   * get all elements that are connected to each selected artifact.
+   * @param {String} viewPrefix
+   */
   getIntersection(viewPrefix) {
-    console.log('\ngetIntersection');
     /*
      befor returning, we need to update the intersection property.
      all keys of clicked elems in the respective view.
@@ -178,23 +151,17 @@ class DataWareHouse extends Model {
     if (connectedKeys.length >= 2) {
       // deep copy of one clicked Elemnts connected elements. (pop removes last elem and returns it)
       intersection = JSON.parse(JSON.stringify(path[connectedKeys.pop()]));
-      // TODO: who is resposible for the case: just one element is selected?
-      // - The loop will never start! return value would be false.
-
       /*
      Idea: If an element occures in each connection,
      it needs to occure in any two arrays - hence it will never be filtered out.
     */
-
       while (connectedKeys.length >= 1) {
         const currentKey = connectedKeys.pop();
         // update the intersection array,
         // by removing any property that does not occure in both arrays
-
         intersection = intersection.filter((value) => path[currentKey].includes(value));
       }
     }
-
     this._data.intersection = intersection;
     this.emit('intersectionDataChanged', [this._prefix, intersection]);
   }
@@ -208,30 +175,24 @@ class DataWareHouse extends Model {
     return this._url;
   }
 
-  /*
-  getJSON() {
-    return {
-      name: this._name,
-      data: this._data,
-    };
-  }
-  */
-
   get initializationData() {
     return this._data.init;
   }
 
+  /**
+   * get the initialization data.
+   * the flag this.dataSetLoaded is needed by the controller.
+   * at the beginning we wait until all DataWareHouses have loaded their data.
+   */
   async asyncInitData() {
     // fetch returns a promise
-    // await expression waits until Promise is fulfilled. returns fthe fulfilled value.
-    console.log('start request');
+    // await expression waits until Promise is fulfilled. returns the fulfilled value.
     this.genericRequest(`${this._url}/init`)
       .then((jsonData) => {
         this._data.init = jsonData.data;
         this._data.visibleData = this._data.init;
         this._data.tooltip = jsonData.tooltip;
         this.dataSetLoaded = true;
-        // DataWareHouse.numbOfLoadedDataSets += 1;
       });
   }
 
@@ -240,21 +201,25 @@ class DataWareHouse extends Model {
     return this.genericRequest(url); // path + arguments
   }
 
-  // could also be assigned to the vul views property?!
-  async getCvssVersionData(v2, v3) {
-    const url = `${this._url}/filter/cvssversion?v2=${v2}&v3=${v3}`;
-    return this.genericRequest(url); // is this a promise??? is this real life?
-  }
+  // async getCvssVersionData(v2, v3) {
+  //   const url = `${this._url}/filter/cvssversion?v2=${v2}&v3=${v3}`;
+  //   return this.genericRequest(url); // is this a promise??? is this real life?
+  // }
 
-  async filterArtifactsBySeverity(cvssScore) {
-    const url = `/vis/filter/byseverity?callingView=${this._prefix}&cvssScore=${cvssScore}`;
-    this.genericRequest(url)
-      .then((data) => {
-        this.emit('severityFilterDataIsLoaded', [this._prefix, data]);
-      });
-    return [this._prefix, this.genericRequest(url)];
-  }
+  // async filterArtifactsBySeverity(cvssScore) {
+  //   const url = `/vis/filter/byseverity?callingView=${this._prefix}&cvssScore=${cvssScore}`;
+  //   this.genericRequest(url)
+  //     .then((data) => {
+  //       this.emit('severityFilterDataIsLoaded', [this._prefix, data]);
+  //     });
+  //   return [this._prefix, this.genericRequest(url)];
+  // }
 
+  /**
+   *
+   * @param {String} path - url for a request
+   * @returns {Object} - requested data
+   */
   // eslint-disable-next-line class-methods-use-this
   async genericRequest(path) {
     const genericUrl = path; // create the url dynamically.
@@ -266,15 +231,20 @@ class DataWareHouse extends Model {
     return response.json();
   }
 
-  numbOfDatapoints() {
-    // TODO loop ever all keys and count elems?!
-    return this._data.length;
-  }
+  // numbOfDatapoints() {
+  //   // TODO loop ever all keys and count elems?!
+  //   return this._data.length;
+  // }
 
-  get allData() {
-    return this._data;
-  }
+  // get allData() {
+  //   return this._data;
+  // }
 
+  /**
+   * This function is called if the artifacts
+   * are displayed as a list. It retrievs the coressponding names for each artifact visible.
+   * @param {Object} arrayOfArtifactIds
+   */
   getTextValues(arrayOfArtifactIds) {
     const artifactText = {};
     arrayOfArtifactIds.forEach((id) => {
@@ -310,6 +280,14 @@ class DataWareHouse extends Model {
   updateData(data) {
     this._data.visibleData = data;
     this.emit('dataUpdate', [this._prefix, this._data.visibleData]);
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get prefix() {
+    return this._prefix;
   }
 }
 

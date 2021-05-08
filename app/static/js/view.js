@@ -8,6 +8,7 @@ import { colorscales } from './tools/helpers.js';
  * It contains three main parts.
  * The Top and the bottom parts are reserved for specific control elements.
  * The middle part is the actual artifact view which displays the data.
+ * @extends EventEmitter
  */
 class ArtifactView extends EventEmitter {
   /**
@@ -523,7 +524,7 @@ class ArtifactView extends EventEmitter {
   }
 
   edgeLen(len) {
-    console.log('new edgeLength is set.');
+    // update edgeLen property.
     if (len > 0) {
       this._edgeLen = len;
     } else {

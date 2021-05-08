@@ -2,19 +2,24 @@
 import { ArtifactView } from './view.js';
 import { DataWareHouse } from './model.js';
 import ViewFilters from './viewFilters.js';
-import { calcEdgeLen, getUniquePart } from './tools/helpers.js';
+import { calcEdgeLen } from './tools/helpers.js';
 import createDependecyGraph from './viewDependency.js';
 
+/**
+ * The controller handles the communication between the views and the models.
+ * It is the heart of our MVC application.
+ * communication is triggerd by events. And mostly async.
+ */
 export default class Controller {
   constructor(modelList, viewList, filterSectionRoot) {
-    console.log('controller');
-    this.models = [];
-    this.views = [];
+    this.models = []; // list containing all models
+    this.views = []; // list containing all views
     this.filtersection = new ViewFilters(filterSectionRoot);
 
-    // track in which view the user selected an artifact first.
-    // is used as a stack.
-    this.firstSelectedView = [];
+    // // safe in which view the user selected an artifact first.
+    // // is used as a stack.
+    // this.firstSelectedView = [];
+
     // flag - we need to redraw all views artifacts if a user selected a new coloring.
     this._rmAllArtifact = false;
 
@@ -25,22 +30,20 @@ export default class Controller {
 
     // create the view instances.
     viewList.forEach((viewDivId) => {
-      this.views.push(new ArtifactView(viewDivId));
+      this.views.push(new ArtifactView(viewDivId)); // encapsulating div
     });
 
+    /*
+    * Add event Listeners to the views.
+    */
     this.views.forEach((view) => {
       view.onEvent('clickArtifact', (elem) => {
         const viewPrefix = elem[0];
         const artifactId = elem[1];
-        // const changeView = this.getView(viewPrefix);
-        // workaround. we uncheck the checkBox so no additional logic is needed.
-        // changeView.uncheckCheckbox();
-        // each Views checkBox is made visible again.
-        // this.views.forEach((v) => { v.showCheckbox(); });
         this.views.forEach((v) => {
           v.fireClick();
         });
-        // checkbox is unchecked. we just want to add the new connected elems to the views.
+        // add the new connected elems to the views.
         this.models.forEach((model) => {
           if (model.prefix === viewPrefix) {
             this.handleClickedSingleArtifact(viewPrefix, artifactId);
@@ -54,9 +57,7 @@ export default class Controller {
       });
       view.onEvent('createDependencyGraph', (args) => {
         const callingView = args[0];
-        const elemId = args[1];
-        console.log('createDepGraph caled');
-        console.log(args);
+        // const elemId = args[1];
         if (callingView === 'app') {
           createDependecyGraph();
         }
@@ -64,13 +65,13 @@ export default class Controller {
       view.onEvent('newOrdering', (args) => {
         const callingView = args[0];
         const selectedOrdering = args[1];
-        console.log(selectedOrdering);
         const model = this.getModel(callingView);
         const params = {
           model: callingView,
           filter: 'ordering',
           value: selectedOrdering,
         };
+        // static method
         DataWareHouse.applyNewFilter(params)
           .then((filteredData) => {
             model.updateData(filteredData[model.prefix]);
@@ -80,7 +81,6 @@ export default class Controller {
       view.onEvent('newColorMapping', (args) => {
         const callingView = args[0];
         const selectedColorMapping = args[1];
-        console.log(selectedColorMapping);
         const model = this.getModel(callingView);
         const params = {
           model: callingView,
@@ -98,23 +98,25 @@ export default class Controller {
         const callingView = args[0];
         const arrayOfArtifactIds = args[1];
         const model = this.getModel(callingView);
-        const retValue = model.getTextValues(arrayOfArtifactIds);
+        model.getTextValues(arrayOfArtifactIds);
       });
-    });
 
-    this.views.forEach((view) => {
       view.onEvent('displayIntersection', (paramViewPrefix) => {
+        /*
+        * we wait until all new data is loaded by sleeping.
+        * by sleeping we prevent false calculations.
+        * we first sleep/wait until the models have updated there data
+        * otherwise we'd calculate the intersection on the old data, since retreiving data
+        * is async an takes some Time. The intersection calculation is done by the models!
+        * */
         (async () => {
           // eslint-disable-next-line no-restricted-syntax
-          // const allDatasetsAreLoaded = false;
-          // while (!allDatasetsAreLoaded) {
           // eslint-disable-next-line no-await-in-loop
-          const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+          // eslint-disable-next-line max-len
+          const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)); // Do not rewrite this function!
           // eslint-disable-next-line no-await-in-loop
           await sleep(525);
-          console.log('waited 525ms for the inital requests to finish.');
           this.models.forEach((model) => {
-            console.log(`model: ${model.prefix}`);
             if (model.prefix !== paramViewPrefix) {
               this.handleGetIntersectedElemes(paramViewPrefix);
             }
@@ -122,29 +124,9 @@ export default class Controller {
           // }
         })();
       });
-      // view.onEvent('uncheckCheckbox', (paramViewPrefix) => {
-      //   this.views.forEach((v) => {
-      //     v.showCheckbox();
-      //   });
-      //   this.models.forEach((model) => {
-      //     if (model.prefix !== paramViewPrefix) {
-      //       model.redrawConnectedArtifacts();
-      //     }
-      //   });
-      // });
-
-      // view.onEvent('checkboxClicked', (paramViewPrefix) => {
-      //   this.views.forEach((v) => {
-      //     if (v.prefix !== paramViewPrefix) {
-      //       v.hideCheckbox();
-      //     }
-      //   });
-      // });
-
       view.onEvent('updateTooltip', (params) => {
         const viewPrefix = params[0];
         const artifactId = params[1];
-
         const model = this.getModel(viewPrefix);
         const callingView = this.getView(viewPrefix);
 
@@ -152,11 +134,13 @@ export default class Controller {
       });
     });
 
+    /*
+    * Add event Listeners to the models.
+    */
     this.models.forEach((model) => {
       model.onEvent('conectedElemsChanged', (data) => {
         const modelPrefix = data[0];
         const newData = data[1];
-        console.log('Model has new data - controller has control.');
         this.views.forEach((view) => {
           if (view.prefix === modelPrefix) {
             view.updateConnectedElems(newData);
@@ -167,7 +151,6 @@ export default class Controller {
       model.onEvent('intersectionDataChanged', (data) => {
         const modelPrefix = data[0];
         const newData = data[1];
-        console.log('Model has new data - controller has control.');
         this.views.forEach((view) => {
           if (view.prefix === modelPrefix) {
             view.highlightIntersection(newData);
@@ -178,9 +161,7 @@ export default class Controller {
       model.onEvent('severityFilterDataIsLoaded', (dataObject) => {
         const modelId = dataObject[0];
         const data = dataObject[1];
-
         const view = this.getView(modelId);
-        console.log(data);
         view.filterCvssVersion(data);
       });
 
@@ -192,16 +173,11 @@ export default class Controller {
 
         if (this._rmAllArtifact) {
           view.removeAllArtifacts();
-          /* use a new colorscale. */
-          // const newColorScale = 'goodall';
-          // this._rmAllArtifact = false;
-          // view.render(newColorScale);
           if (modelId === 'vul') {
             let newColorScale = 'cve';
             if (view.currentlySeletedColorMapping() === 'meta_affected_apps') {
               newColorScale = 'linear';
             }
-
             this._rmAllArtifact = false;
             view.render(newColorScale);
           } else {
@@ -211,8 +187,6 @@ export default class Controller {
         } else {
           view.render();
         }
-
-        // model.getintersection();
       });
 
       model.onEvent('updateListWithText', (dataObject) => {
@@ -225,9 +199,8 @@ export default class Controller {
     });
 
     /*
-      v2 = cvssVersion 2 and v3 = cvssVerison 3
-      checkboxes v2 and v3 decide which CVEs are highlighted.
-    */
+      * add event listener to the filtersection
+      */
     this.filtersection
       .onEvent('filterCvssVersion', (checkboxStatus) => {
         const [version2, version3, none] = checkboxStatus; // bool values.
@@ -243,16 +216,7 @@ export default class Controller {
               model.redrawConnectedArtifacts();
             });
           });
-
-        // const vulModel = this.getModel('vul');
-        // const vulView = this.getView('vul');
-        // vulModel.getCvssVersionData(version2, version3)
-        //   .then((data) => {
-        //     vulView.filterCvssVersion(data); // data is an array of ids
-        //   });
       })
-
-      // TODO: one click event function
       .onEvent('clickSeverityFilter', (cvssScoresArray) => {
         const params = { filter: 'severity' };
 
@@ -260,7 +224,6 @@ export default class Controller {
           params[score] = true;
         });
 
-        console.log(params);
         DataWareHouse.applyNewFilter(params)
           .then((filteredData) => {
             this.models.forEach((model) => {
@@ -287,9 +250,6 @@ export default class Controller {
           min,
           max,
         };
-        // this.models.forEach((m) => {
-        //   m.applyRangeFilterToData(min, max);
-        // });
 
         DataWareHouse.applyNewFilter(params)
           .then((filteredData) => {
@@ -299,18 +259,18 @@ export default class Controller {
             });
           });
       })
+
       .onEvent('intersectionTargetChanged', (newTargetView) => {
         this.views.forEach((v) => {
           let newBool = false;
-
           if (v.prefix === newTargetView) {
             newBool = true;
           }
           // eslint-disable-next-line no-underscore-dangle
           v._updateControlStatus('showIntersection', newBool);
-          // v.resetIntersectionClass();
         });
       })
+
       .onEvent('resetAllIntersectedElem', () => {
         this.views.forEach((v) => {
           v.resetIntersectionClass();
@@ -321,6 +281,12 @@ export default class Controller {
     this.initVis();
   }
 
+  /**
+   * Helper function.
+   * Returns a view by its prefix name.
+   * @param {String} viewName - name of the view
+   * @returns {View}
+   */
   getView(viewName) {
     let retView = null;
     this.views.forEach((view) => {
@@ -334,6 +300,12 @@ export default class Controller {
     return {};
   }
 
+  /**
+   * Helper Function.
+   * Returns a model by its prefix name.
+   * @param {String} modelPrefix
+   * @returns {Model}
+   */
   getModel(modelPrefix) {
     let retModel = null;
     this.models.forEach((model) => {
@@ -406,13 +378,11 @@ export default class Controller {
       viewsMaxEdgeLen = Math.min(...findMinEdgeLen);
       this.views.forEach((v) => {
         v.edgeLen(viewsMaxEdgeLen);
-        console.log('Ärender Artifacts');
         v.render('cve', 0); // init color-sclae => cve +
       });
 
       DataWareHouse.initFilterSectionSeverityChart()
         .then((data) => {
-          console.log(data);
           this.filtersection.severityFilter(data);
         });
     })()
@@ -442,9 +412,11 @@ export default class Controller {
     });
   }
 
-  // viewPrefix - where the event happened
+  /**
+   * Instruct a model to calculate the insection.
+   * @param {String} viewPrefix - determines in which view the event happend.
+   */
   async handleGetIntersectedElemes(viewPrefix) {
-    console.log('handleGetIntersecedElemets');
     this.models.forEach((model) => {
       const modelPrefix = model.prefix;
       if (viewPrefix !== modelPrefix) {
