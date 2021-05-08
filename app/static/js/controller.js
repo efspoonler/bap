@@ -303,8 +303,6 @@ export default class Controller {
         this.views.forEach((v) => {
           let newBool = false;
 
-          console.log(v.prefix);
-          console.log(newTargetView);
           if (v.prefix === newTargetView) {
             newBool = true;
           }
