@@ -38,7 +38,6 @@ def send_visualization_files():
     vis_libs= pd.read_pickle('./app/static/pickleFiles/visualization_libraries', compression='infer')
     vis_vulas = pd.read_pickle('./app/static/pickleFiles/visualization_vulnerabilities', compression='infer')
 
-    print('HMMM')
     ret = {
         'apps': vis_apps,
         'libs': vis_libs,
@@ -46,8 +45,6 @@ def send_visualization_files():
     }
 
     return jsonify(ret)
-
-
 
 
 # TODO: add RequestParams
@@ -74,9 +71,6 @@ def lib_vulas(digest):
         return jsonify(data)
     else:
         return make_response(jsonify(data), 400)
-
-
-
 
 '''
 all vulnerable dependencies of the particular application.
@@ -170,12 +164,6 @@ def bugsPerApp(mvnGroup, artifact, version):
         return res
     else:
         return make_response(jsonify(data), 400)
-
-
-
-
-
-
 
 
 '''

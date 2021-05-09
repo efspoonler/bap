@@ -23,22 +23,6 @@ def get_entity_infromation():
     return jsonify(ret)    
 
 
-'''
-@app_view_blueprint.route('/vis/app/dependson')
-@cache.cached(timeout=cacheTimeout)
-def order_apps():
-    
-    elem = request.args.get('id') # we want all applicaitons that include this elem.
-    callingView = request.args.get('connectedView')
-    #ret = getAllConnectedElemIds('app', elem, callingView)
-    #return jsonify(ret)
-'''
-
-
-
-
-
-
 @app_view_blueprint.route('/vis/app')
 @cache.cached(timeout=cacheTimeout)
 def order_apps():

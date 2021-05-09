@@ -1,6 +1,6 @@
 from app.cache import cache  # import cache to work with blueprints
 from flask import make_response, jsonify, Blueprint, stream_with_context, Response, request
-from .data_processing import reorder_entities, get_connected_entities, init_vis, get_artifacts_by_cvssversion
+from .data_processing import reorder_entities, get_connected_entities, init_vis 
 
 vul_view_blueprint = Blueprint('vul_view_blueprint', __name__)
 cacheTimeout = 36000

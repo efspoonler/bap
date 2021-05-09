@@ -43,11 +43,6 @@ def create_visualization_pickle_files():
     replaceNoneAndNaNValues(df_apps_with_deps)
     #
     ###Loading of the pickle-file + creation of the different dataframes is done.
-
-
-
-    #
-    #
     #
     #
     #

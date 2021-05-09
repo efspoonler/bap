@@ -9,7 +9,7 @@ from .data_processing import get_data_frame
 
 global filter_dict, active_filters
 
-#Todo: srtBy needs to run before color, since color changes the columns name. -
+# contains all active filters.
 active_filters = {
     
 }
@@ -61,11 +61,14 @@ def remove_filter(filter_name):
       
       del active_filters[filter_name]
 
-def remove_all_filters():
-    global filters
 
-    filters = {}
+# used to reset all active filters on a reload.
+def remove_all_filters():
+    global active_filters
+
+    active_filters = {}
     print('all filters are removed.')
+    return {'message': 'all filters are removed' }
 
 
 def recalc_data(model_list):
@@ -87,7 +90,6 @@ def run_filters_on_dataset(calling_model:str):
    # -- value == parameters -- are the parameters for the -- key -- function.
    for key, value in active_filters.items():
      if not df.empty:
-        print(f'\n \n \n {df.empty} \n {not df.empty} \n')
         print(f'callingModel: {calling_model} -- function_name: {key} -- params: {value}')
         df_returned = filter_dict[key](calling_model, df, value) #This is where the magic happens.
         print(f'returnd from function_name: {key}')
@@ -128,7 +130,6 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
   
   # Build regex
   myRegex = ''
-  #print(f'value v2: {v2} -- v3: {v3}')
   if (v2 == 'true' and v3 == 'true' and noVersion == 'true' ):
     # myRegex = '^2 || ^3 || ^null'
     return df_param # all checkboxes are checked. Hence we do not need to modify the df.
@@ -147,7 +148,7 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
   elif v2 == 'false' and v3 == 'true' and noVersion == 'true':
       myRegex = '^3|^null'
 
-  else: # no chckbox selected or just none checkbox.
+  else: # no checkbox  selected or just none checkbox.
     myRegex = '^null' 
   
 
@@ -165,8 +166,6 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
        
       for index, row in df_param.iterrows(): # _ is the index
           # bool decides if the row (aplication or library) contains at least on cve which uses cvssVersion 2.
-          #print(index)
-          #print(df_param)
           add_index_if_matched = True # This boolean prevents that an index is added multiple times to our select_indices list.
           for cve in row['contained_vulnerabilities']:
               # we could also use re.match -> match starts always at the beginning.
@@ -176,7 +175,6 @@ def get_artifacts_by_cvssversion(calling_model:str, df_param, params:Dict ):
                   select_indices.append(index)
                   break
 
-      #print(select_indices)
       if select_indices: # we found matching rows with our Regex
          df_ret = df_param.loc[select_indices]
       else:
@@ -201,10 +199,8 @@ def set_column_as_color(calling_model: str, df_param):
 
 def sort_df_by_column(calling_model, df_param):
     global sorter
-    print(df_param.columns)
     criteria = sorter[calling_model]
     print(f'{calling_model} called -> sort_df_by_column: {criteria}') 
-    
     if calling_model == 'vul':
            
            df_ret = df_param.sort_values(by=[str(criteria), 'cve'], inplace=False)
@@ -225,8 +221,6 @@ def get_artifacts_by_cve_base_vector(calling_model, df_param, params):
   # Example: (\/?AV:[N|L]\/?AC:[M].*|null)
   v2 = params['v2'].split(',')
   v3 = params['v3'].split(',')
-  print(v2)
-  print(v3)
 
   v2Regex = ""
   v3Regex = ""
@@ -274,8 +268,6 @@ def get_artifacts_by_cve_base_vector(calling_model, df_param, params):
   v3Regex = '(CVSS:3.\d/' + v3Regex + '.*|null|^$)' #the ^$ (matches an empty string) should be moved into the data preprocessing.  
   v2Regex = '(' + v2Regex + '.*|null|^$)' #the ^$ (matches an empty string) should be moved into the data preprocessing.  
   
-  print(v3Regex)
-  print(v2Regex)
   # vul
   if(calling_model == 'vul'):
     df_v2 = pd.DataFrame()
@@ -289,17 +281,12 @@ def get_artifacts_by_cve_base_vector(calling_model, df_param, params):
       df_filtered_v3 = df_param.loc[df_param['cvssVersion'].str.contains(fr'{versionRegex}', regex=True)]
       df_v3 = df_filtered_v3.loc[df_filtered_v3['cvssVector'].str.contains(f'{v3Regex}', na=False, regex=True, case=False)] #flags=re.IGNORECASE)] #, na=False)
     
-
-    print(df_v2)
-    print(df_v3)
     frames = [df_v2, df_v3]
     df_filtered = pd.concat(frames) 
     df_filtered.drop_duplicates(subset=['cve'], inplace=True)
     return df_filtered
-  
 
   # app and lib
-  
   if calling_model == 'app' or calling_model == 'lib':
       select_indices = []
       df_v2 = pd.DataFrame()
@@ -323,8 +310,6 @@ def get_artifacts_by_cve_base_vector(calling_model, df_param, params):
                         select_indices.append(index)
                         break
                       
-
-      #print(select_indices)
       if select_indices: # we found matching rows with our Regex
          df_ret = df_param.loc[select_indices]
          if calling_model == 'app':
@@ -337,19 +322,10 @@ def get_artifacts_by_cve_base_vector(calling_model, df_param, params):
          print(f'no app our lib contains this vulnerability version {myRegex} - seems like there is a Problem.')
   return df_ret
 
-
-
-
-
-
 def get_artifacts_by_specific_cvssscore(calling_model, df_param, params):
-  
   df_filtered = pd.DataFrame()
   cvssScores = list(params.keys())
   listOfCveIds = []
-
-
-
   
 
   # vul

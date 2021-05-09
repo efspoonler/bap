@@ -125,29 +125,13 @@ def init_vis(callingModel, load_pickle_files=False):
          print(f'error: could not find callingModel: {callingModel}')
     return {'data': init_data, 'tooltip': init_tooltip} 
 
-'''
-
-'''
-
-
-    
-
 def reorder_entities(viewId: str, current_data: List[str], orderBy: str) -> Dict: 
    df:pandasDataFrame = get_data_frame(viewId)
-   print(df)
    df.sort_values(by='gav', inplace=True)
-   print('HIER')
-   print('HIER')
-   print('HIER')
-   print('HIER')
-   print('HIER')
-   print(df)
    df.rename(columns={ 'gav': 'id'}, inplace = True)
    return df.to_dict(orient='records')
 
-
-
-
+''' return a deep copy of the respective dataframe '''
 def get_data_frame(viewId:str) -> pandasDataFrame:
    global app_dataFrame, lib_dataFrame, vula_dataFrame
    if (viewId == 'app'):
@@ -160,19 +144,6 @@ def get_data_frame(viewId:str) -> pandasDataFrame:
       print('viewId does not fit any given ID in get_data_frame')
       return -1
 
-# most 
-def normalizeColumns(df: pandasDataFrame) -> pandasDataFrame:
-    df_num: pandasDataFrame = df.select_dtypes(include=[np.number])
-    df_norm = (df_num - df_num.min()) / (df_num.max() - df_num.min())
-    df[df_norm.columns] = df_norm
-    return df
-
-
-def normalizeColumnsLog(df: pandasDataFrame) -> pandasDataFrame:
-    df_num: pandasDataFrame = df.select_dtypes(include=[np.number])
-    df_norm = (np.log(df_num) -np.log(df_num.min())) / (np.log(df_num.max()) - np.log(df_num.min()))
-    df[df_norm.columns] = df_norm
-    return df
 
 '''
 Calculates and adds the average severity of an lib and application. The avg value gets added to the Dataframe under meta.avg_severity.
@@ -201,7 +172,6 @@ def calcAvgSeverity(df: pandasDataFrame, view:str):
 
 def get_connected_entities(calling_view:str, id:str, intersection=False):
     global app_dataFrame, lib_dataFrame, vula_dataFrame
-    #views = ['app','lib','vula'].remove
     
     if calling_view == 'app':
       row = app_dataFrame.loc[app_dataFrame['gav'] == id]
@@ -215,7 +185,6 @@ def get_connected_entities(calling_view:str, id:str, intersection=False):
           vul_ids.append(vulnerability['cve'])
 
       ret = {'lib': lib_ids, 'vul': vul_ids}
-      print(ret) 
 
     if calling_view == 'lib':
         row =  lib_dataFrame.loc[lib_dataFrame['libDigest'] == id]
@@ -225,44 +194,12 @@ def get_connected_entities(calling_view:str, id:str, intersection=False):
         for vulnerability in row['contained_vulnerabilities'].values[0]:
           vul_ids.append(vulnerability['cve'])
         ret = {'app': app_ids, 'vul': vul_ids}
-        print (ret)
     if calling_view == 'vul':
         row = vula_dataFrame[vula_dataFrame['cve'] == id]
-        #print(row.columns())
-        print(row)
         app_ids = row['affected_applications'].values[0] 
         lib_ids = row['affected_libraries'].values[0]
         ret = {'app': app_ids, 'lib': lib_ids}
     return ret
-
-# old Version - can be deleted as soon as the Dict version works.
-def get_artifacts_by_cvssversion(v2:str,v3:str, calling_view:str):
-  global vula_dataFrame
-
-  df = get_data_frame('vula')
-  print(df)
-  myRegex = ''
-  print(f'value v2: {v2} -- v3: {v3}')
-  if (v2 == 'true' and v3 == 'true' ):
-    myRegex = '^2 || ^3 || ^null'
-  elif v2 == 'true' :
-    myRegex = '^2'
-  elif v3 == 'true':
-    myRegex = '^3'  
-  else: # no chckbox selected
-    myRegex = '^null' 
-  
-  print(myRegex)
-
-  df= df[df['cvssVersion'].str.contains(fr'{myRegex}', regex=True, na=False)]
-  df.rename(columns={ 'cve': 'id'}, inplace = True)
-  ret = df['id'] #Series
-  print(ret)
- 
-  return ret.tolist()
-
-
-
 
 
 def severityFilterInit():
@@ -311,60 +248,24 @@ def severityFilterInit():
         temp_obj[k] = v
      solution.append([ bins[i], temp_obj, i])
 
-  print(solution)   
-
   return solution 
 
-
-# def get_artifacts_by_specific_cvssscore(callingView, cvssScore):
-#   global app_dataFrame, lib_dataFrame, vula_dataFrame
-#   cvssScore = int(cvssScore) #we call the function with GET parameters. These are by default of type str.
-#   #the next step in necessary, since we can not compare 'null' to an int.
-#   vula_dataFrame['cvssScore'] = vula_dataFrame['cvssScore'].replace("null", "0.0").astype(float) # seet null -> 10 to enforce a worst case approach.
-#   #select all rows which fall into the intervall:     cvssScore  <= score < cvssScore+1 
-#   filterByCvssScore = vula_dataFrame.loc[(vula_dataFrame['cvssScore'] >= cvssScore) & (vula_dataFrame['cvssScore'] < cvssScore+1)]
-#   listOfCveIds = filterByCvssScore['cve'].tolist()
-
-#   if(callingView == 'vul'):
-#      return listOfCveIds
-    
-#   if(callingView == 'app'):
-#      contained = [] 
-#      for _ ,row in app_dataFrame.iterrows(): # _ is the index
-#        for cve in row['contained_vulnerabilities']:
-#          if cve['cve'] in listOfCveIds:
-#            contained.append(row['gav'])
-
-#      contained = list(dict.fromkeys(contained)) # delets duplicate entries.
-#      return contained      
-
-#   if(callingView == 'lib'):
-#      contained = [] 
-#      for _, row in lib_dataFrame.iterrows(): # _ is the index
-#        for cve in row['contained_vulnerabilities']:
-#          if cve['cve'] in listOfCveIds:
-#            contained.append(row['libDigest'])
-     
-#      contained = list(dict.fromkeys(contained)) # delets duplicate entries.
-
-#      return contained 
-
-#   else:
-#     return {'problem in get_artifacts_by_specific_cvssscore - callingView seems to be wrong.'}
-
-# # def getIntersectingElems(calling_view: str, list_of_selected_elems: List):
+# maybe useful.
+# def normalizeColumns(df: pandasDataFrame) -> pandasDataFrame:
+#     df_num: pandasDataFrame = df.select_dtypes(include=[np.number])
+#     df_norm = (df_num - df_num.min()) / (df_num.max() - df_num.min())
+#     df[df_norm.columns] = df_norm
+#     return df
 
 
+# def normalizeColumnsLog(df: pandasDataFrame) -> pandasDataFrame:
+#     df_num: pandasDataFrame = df.select_dtypes(include=[np.number])
+#     df_norm = (np.log(df_num) -np.log(df_num.min())) / (np.log(df_num.max()) - np.log(df_num.min()))
+#     df[df_norm.columns] = df_norm
+#     return df
 
 
-filter_function = {
+# filter_function = {
 
-  'cvssVersion': get_artifacts_by_cvssversion #takes three arguments.
-}
-
-
-#load_app_forest()
-#load_pickle_files()
-#severityFilterInit()
-#filter_function['cvssVersion']('true', 'false', 'app')
-#print('OKe')
+#   'cvssVersion': get_artifacts_by_cvssversion #takes three arguments.
+# }

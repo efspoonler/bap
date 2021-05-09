@@ -15,6 +15,7 @@ export default class Controller {
     this.models = []; // list containing all models
     this.views = []; // list containing all views
     this.filtersection = new ViewFilters(filterSectionRoot);
+    this.filtersectionRootNode = filterSectionRoot;
 
     // // safe in which view the user selected an artifact first.
     // // is used as a stack.
@@ -276,6 +277,14 @@ export default class Controller {
           v.resetIntersectionClass();
           v.fireClick();
         });
+      })
+
+      .onEvent('redrawWholeFilterMenu', () => {
+        this.filtersection = new ViewFilters(this.filtersectionRootNode);
+        DataWareHouse.initFilterSectionSeverityChart()
+          .then((data) => {
+            this.filtersection.severityFilter(data);
+          });
       });
 
     this.initVis();

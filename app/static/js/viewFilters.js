@@ -217,12 +217,35 @@ class ViewFilters extends EventEmitter {
 
     this._dynamicBaseVector = {};
 
+    this.resetAllActiveFilters();
     this.updateWidthAndHeight();
     this.cvssVersionFilter();
     this.initBaseMetricFilter();
     this.addDropdownMetric();
     this.addDropdownList();
     this.addIntersectionHighlighting();
+  }
+
+  addResetAllSetFilters() {
+    const apply = d3.select(`#${this._filterDivId}`)
+      .append('div')
+      .attr('id', 'rm-all-filters-div')
+      .attr('class', 'row mt-4');
+
+    apply
+      .html(
+        `<button id="rm-all-filters" class="btn btn-sm btn-outline-primary btn-block" type="submit">Reset all filters</button>
+`,
+      );
+
+    d3.select('#rm-all-filters')
+      .on('click', () => {
+        this.resetAllActiveFilters();
+        d3.select(`#${this._filterDivId}`)
+          .selectAll('*')
+          .remove();
+        this.emit('redrawWholeFilterMenu');
+      });
   }
 
   /**
@@ -314,6 +337,8 @@ class ViewFilters extends EventEmitter {
       .attr('class', 'max-x label')
       .attr('text-anchor', 'middle')
       .text('max');
+
+    this.addResetAllSetFilters();
   }
 
   cvssVersionFilter() {
@@ -392,7 +417,7 @@ class ViewFilters extends EventEmitter {
       bins[i] = d[0];
     });
     const filterDiv = d3.select(`#${this._filterDivId}`);
-    const severityChartHeight = this._height * 0.3;
+    const severityChartHeight = this._height * 0.2;
     const severitySvg = filterDiv
       .append('div')
       .attr('class', 'row mt-4')
@@ -491,7 +516,6 @@ class ViewFilters extends EventEmitter {
       })
       .on('click', (event) => {
         // toggle between the class.
-        console.log(this);
         const that = event.target;
         d3.select(that).classed('cvssScore-selected', !d3.select(that).classed('cvssScore-selected'));
         d3.select(that).attr('fill-opacity', d3.select(that).attr('fill-opacity') < 1 ? 1 : 0.5);
@@ -790,6 +814,19 @@ class ViewFilters extends EventEmitter {
   updateWidthAndHeight() {
     this._width = $(`#${this._filterDivId}`)[0].clientWidth - this.MARGINS.left - this.MARGINS.right;
     this._height = window.innerHeight - $('#nav-bar').outerHeight(true) - $('#above-vis').outerHeight(true) - $('.view-menu').outerHeight(true) - this.MARGINS.bottom;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  resetAllActiveFilters() {
+    const path = '/vis/filter/reset';
+    fetch(path)
+      .then((response) => {
+        if (response.status !== 200) { // error handling with status code
+          console.log(`Problem in model.js::loading initial data. Status code: ${response.status}`);
+          return { error: `${response.status}` };
+        }
+        return 1;
+      });
   }
 }
 
