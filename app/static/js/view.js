@@ -216,26 +216,11 @@ class ArtifactView extends EventEmitter {
             .attr('stroke', (d) => this._currentColorScale(d.color))
             .attr('style', (d) => `fill:${this._currentColorScale(d.color)}`);
 
-          /*
-          * if we display the artifacts in a List, we want to use the extra space to
-          * show more information in each artifact/List-Element.
-          */
-          if (flagListDisplay) {
-            const idArray = [];
-            update
-              .each((d) => {
-                idArray.push(d.id);
-              });
-            this.emit('getListsTextValues', [this._prefix, idArray]);
-          } else {
-            d3.selectAll('.text.label')
-              .remove();
-          }
-
           return update;
         },
         (exit) => {
           exit
+            .attr('class', 'exit')
             // eslint-disable-next-line no-shadow
             .call((exit) => exit.transition().duration(2000)
               // eslint-disable-next-line no-unused-vars
@@ -247,6 +232,24 @@ class ArtifactView extends EventEmitter {
         s.transition().duration(tansitionTime)
           .attr('transform', (d, i) => `translate(${gx(d, i)}, ${gy(d, i)})`);
       });
+
+    /*
+          * if we display the artifacts in a List, we want to use the extra space to
+          * show more information in each artifact/List-Element.
+          */
+    if (flagListDisplay) {
+      const idArray = [];
+      d3.selectAll(`.${this._viewDivId}-g`)
+        .selectAll('*:not(exit)')
+        .each((d) => {
+          idArray.push(d.id);
+        });
+      this.emit('getListsTextValues', [this._prefix, idArray]);
+    } else {
+      d3.select(`#${this._viewDivId}-svg`)
+        .selectAll('.text.label')
+        .remove();
+    }
 
     // This function is needed durign redrawing. it takes care of all clicked elements.
     // clicked elements should be clicked if redrawed
