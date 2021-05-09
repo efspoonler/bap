@@ -234,7 +234,7 @@ class ViewFilters extends EventEmitter {
 
     apply
       .html(
-        `<button id="rm-all-filters" class="btn btn-sm btn-outline-primary btn-block" type="submit">Reset all filters</button>
+        `<button id="rm-all-filters" class="btn btn-sm btn-outline-primary btn-block" type="submit">Reset filters - (keep selected artifacts)</button>
 `,
       );
 

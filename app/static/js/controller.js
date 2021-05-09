@@ -73,11 +73,7 @@ export default class Controller {
           value: selectedOrdering,
         };
         // static method
-        DataWareHouse.applyNewFilter(params)
-          .then((filteredData) => {
-            model.updateData(filteredData[model.prefix]);
-            model.redrawConnectedArtifacts();
-          });
+        this.addNewFilter(params, model);
       });
       view.onEvent('newColorMapping', (args) => {
         const callingView = args[0];
@@ -89,11 +85,7 @@ export default class Controller {
           value: selectedColorMapping,
         };
         this._rmAllArtifact = true;
-        DataWareHouse.applyNewFilter(params)
-          .then((filteredData) => {
-            model.updateData(filteredData[model.prefix]);
-            model.redrawConnectedArtifacts();
-          });
+        this.addNewFilter(params, model);
       });
       view.onEvent('getListsTextValues', (args) => {
         const callingView = args[0];
@@ -199,6 +191,11 @@ export default class Controller {
       });
     });
 
+    this.eventListenersFiltersection();
+    this.initVis();
+  }
+
+  eventListenersFiltersection() {
     /*
       * add event listener to the filtersection
       */
@@ -210,13 +207,7 @@ export default class Controller {
         const params = {
           filter: 'cvssVersion', v2: version2, v3: version3, none,
         };
-        DataWareHouse.applyNewFilter(params)
-          .then((filteredData) => {
-            this.models.forEach((model) => {
-              model.updateData(filteredData[model.prefix]);
-              model.redrawConnectedArtifacts();
-            });
-          });
+        this.addNewFilter(params);
       })
       .onEvent('clickSeverityFilter', (cvssScoresArray) => {
         const params = { filter: 'severity' };
@@ -225,24 +216,12 @@ export default class Controller {
           params[score] = true;
         });
 
-        DataWareHouse.applyNewFilter(params)
-          .then((filteredData) => {
-            this.models.forEach((model) => {
-              model.updateData(filteredData[model.prefix]);
-              model.redrawConnectedArtifacts();
-            });
-          });
+        this.addNewFilter(params);
       })
       .onEvent('applyBaseVectorFilter', (activeFilters) => {
-        const param = activeFilters;
-        param.filter = 'baseVector';
-        DataWareHouse.applyNewFilter(param)
-          .then((filteredData) => {
-            this.models.forEach((model) => {
-              model.updateData(filteredData[model.prefix]);
-              model.redrawConnectedArtifacts();
-            });
-          });
+        const params = activeFilters;
+        params.filter = 'baseVector';
+        this.addNewFilter(params);
       })
       .onEvent('rangeSliderChanged', (callingViewAndMinMax) => {
         const [min, max] = callingViewAndMinMax;
@@ -251,14 +230,7 @@ export default class Controller {
           min,
           max,
         };
-
-        DataWareHouse.applyNewFilter(params)
-          .then((filteredData) => {
-            this.models.forEach((model) => {
-              model.updateData(filteredData[model.prefix]);
-              model.redrawConnectedArtifacts();
-            });
-          });
+        this.addNewFilter(params);
       })
 
       .onEvent('intersectionTargetChanged', (newTargetView) => {
@@ -284,10 +256,35 @@ export default class Controller {
         DataWareHouse.initFilterSectionSeverityChart()
           .then((data) => {
             this.filtersection.severityFilter(data);
+            this.eventListenersFiltersection();
+            this.addNewFilter({ filter: 'redraw all artifacts without any filter set.' });
           });
       });
+  }
 
-    this.initVis();
+  // eslint-disable-next-line class-methods-use-this
+  /**
+   * @param {Object} params - must contain a <filter: 'str'> and some other arguments.
+   * if no parameters (beside the name) are passed the filter will be removed.
+   * @param {DataWareHouse} model - specifies the model which will be updated.
+   */
+  addNewFilter(params = {}, model = null) {
+    // filter is added to every model - every model is updated.
+    if (model === null) {
+      DataWareHouse.applyNewFilter(params)
+        .then((filteredData) => {
+          this.models.forEach((m) => {
+            m.updateData(filteredData[m.prefix]);
+            m.redrawConnectedArtifacts();
+          });
+        });
+    } else { // A specific model is passed to the function. We update just the specific model.
+      DataWareHouse.applyNewFilter(params)
+        .then((filteredData) => {
+          model.updateData(filteredData[model.prefix]);
+          model.redrawConnectedArtifacts();
+        });
+    }
   }
 
   /**
