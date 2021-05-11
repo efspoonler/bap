@@ -9,9 +9,7 @@ cacheTimeout = 36000
 
 @vis_blueprint.route('/vis/filter/severityfilterinit')
 def init_severity_filter():
-    print('init severity route found')
     ret = severityFilterInit()
-    print(ret)
     return jsonify(ret)
 
 

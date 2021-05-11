@@ -18,8 +18,6 @@ def init_lib_model():
 def order_apps():
     
     ordering = request.args.get('ordering')
-    print(ordering)
-    print('ORDERING')
     ret = reorder_entities('lib', ordering, 'AUSFÜLLEN')
     return jsonify(ret)
 
@@ -27,7 +25,6 @@ def order_apps():
 @lib_view_blueprint.route('/vis/lib/clicked')
 def get_entity_infromation():
     digest = request.args.get('id')
-    print(digest)
     ret = get_connected_entities('lib', digest)
     #ret_no_duplicates = {k:list(dict.fromkeys(valuesList)) for k, valuesList in ret.items()}
     return jsonify(ret)   

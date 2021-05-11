@@ -134,32 +134,32 @@
         </button>
     <div class="dropdown-menu orderings" aria-labelledby="app-orderings">
         <h6 class="dropdown-header">Severity Filters</h6>
-        <button class="dropdown-item" type="button" id="app-min_cvssScore-o">Lowest CVSS score</button>
-        <button class="dropdown-item" type="button" id="app-max_cvssScore-o">Highest CVSS score</button>
-        <button class="dropdown-item" type="button" id="app-avg_severity-o">Average CVSS score</button>
+        <button class="dropdown-item [min]" type="button" id="app-min_cvssScore-o">Lowest CVSS score</button>
+        <button class="dropdown-item [max]" type="button" id="app-max_cvssScore-o">Highest CVSS score</button>
+        <button class="dropdown-item [avg]" type="button" id="app-avg_severity-o">Average CVSS score</button>
         <hr class="dropdown-divider">
         <h6 class="dropdown-header">Other Metrics</h6>
-        <button class="dropdown-item" type="button" id="app-meta_vulas-o">Number of distinct vulnerabilitites</button>
-        <button class="dropdown-item" type="button" id="app-meta_vul_libs-o">Number of vulnerable Libraries</button>
-        <button class="dropdown-item" type="button" id="app-meta_numb_libs-o">Numb of Libraries</button>
+        <button class="dropdown-item [min]" type="button" id="app-meta_vulas-o">Number of distinct vulnerabilitites</button>
+        <button class="dropdown-item [numb vulnerable libs]" type="button" id="app-meta_vul_libs-o">Number of vulnerable Libraries</button>
+        <button class="dropdown-item [numb libs]" type="button" id="app-meta_numb_libs-o">Numb of Libraries</button>
     </div>
 </div>
 </script>
 
 <script id="template-view-orderings-lib" type="text/template">
     <div class="dropdown">
-    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="app-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="lib-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
          Orderings 
         </button>
-    <div class="dropdown-menu orderings" aria-labelledby="app-orderings">
+    <div class="dropdown-menu orderings" aria-labelledby="lib-orderings">
         <h6 class="dropdown-header">Severity Filters</h6>
-        <button class="dropdown-item" type="button" id="lib-min_cvssScore-o">Lowest CVSS score</button>
-        <button class="dropdown-item" type="button" id="lib-max_cvssScore-o">Highest CVSS score</button>
-        <button class="dropdown-item" type="button" id="lib-avg_severity-o">Average CVSS score</button>
+        <button class="dropdown-item [min]" type="button" id="lib-min_cvssScore-o">Lowest CVSS score</button>
+        <button class="dropdown-item [max]" type="button" id="lib-max_cvssScore-o">Highest CVSS score</button>
+        <button class="dropdown-item [avg]" type="button" id="lib-avg_severity-o">Average CVSS score</button>
         <hr class="dropdown-divider">
         <h6 class="dropdown-header">Other Metrics</h6>
-        <button class="dropdown-item" type="button" id="lib-meta_vulas-o">Number of distinct vulnerabilitites in each library</button>
-        <button class="dropdown-item" type="button" id="lib-meta_affected_apps-o">Number of usages (in applications)</button>
+        <button class="dropdown-item [distinct]" type="button" id="lib-meta_vulas-o">Number of distinct vulnerabilitites in each library</button>
+        <button class="dropdown-item [usage]" type="button" id="lib-meta_affected_apps-o">Number of usages (in applications)</button>
     </div>
 </div>
 </script>
@@ -167,16 +167,16 @@
 
 <script id="template-view-orderings-vul" type="text/template">
     <div class="dropdown">
-    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="app-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <button class="btn btn-light dropdown-toggle select-ordering btn-sm btn-block" type="button" id="vul-orderings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
          Orderings 
         </button>
-    <div class="dropdown-menu orderings" aria-labelledby="app-orderings">
+    <div class="dropdown-menu orderings" aria-labelledby="vul-orderings">
         <h6 class="dropdown-header">Severity Filters</h6>
-        <button class="dropdown-item" type="button" id="vul-cvssScore-o">CVSS score (non-decreasing)</button>
+        <button class="dropdown-item [score]" type="button" id="vul-cvssScore-o">CVSS score (non-decreasing)</button>
         <hr class="dropdown-divider">
         <h6 class="dropdown-header">Other Metrics</h6>
-        <button class="dropdown-item" type="button" id="vul-cvssVersion-o">CVSS Version</button>
-        <button class="dropdown-item" type="button" id="vul-meta_affected_apps-o">Number of affected applications</button>
+        <button class="dropdown-item [version]" type="button" id="vul-cvssVersion-o">CVSS Version</button>
+        <button class="dropdown-item [affected apps]" type="button" id="vul-meta_affected_apps-o">Number of affected applications</button>
     </div>
 </div>
 </script>
@@ -188,38 +188,38 @@
         </button>
     <div class="dropdown-menu color" aria-labelledby="app-color">
         <h6 class="dropdown-header">Severity to Color</h6>
-        <button class="dropdown-item" type="button" id="app-min_cvssScore-c">Lowest CVSS score</button>
-        <button class="dropdown-item" type="button" id="app-max_cvssScore-c">Highest CVSS score</button>
-        <button class="dropdown-item" type="button" id="app-avg_severity-c">Average CVSS score</button>
+        <button class="dropdown-item [min]" type="button" id="app-min_cvssScore-c">Lowest CVSS score</button>
+        <button class="dropdown-item [max]" type="button" id="app-max_cvssScore-c">Highest CVSS score</button>
+        <button class="dropdown-item [avg]" type="button" id="app-avg_severity-c">Average CVSS score</button>
     </div>
 </div>
 </script>
 
 <script id="template-view-color-lib" type="text/template">
     <div class="dropdown">
-        <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="app-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="lib-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
              Color 
             </button>
         <div class="dropdown-menu color" aria-labelledby="lib-color">
             <h6 class="dropdown-header">Severity to Color</h6>
-            <button class="dropdown-item" type="button" id="lib-min_cvssScore-c">Lowest CVSS score</button>
-            <button class="dropdown-item" type="button" id="lib-max_cvssScore-c">Highest CVSS score</button>
-            <button class="dropdown-item" type="button" id="lib-avg_severity-c">Average CVSS score</button>
+            <button class="dropdown-item [min]" type="button" id="lib-min_cvssScore-c">Lowest CVSS score</button>
+            <button class="dropdown-item [max]" type="button" id="lib-max_cvssScore-c">Highest CVSS score</button>
+            <button class="dropdown-item [avg]" type="button" id="lib-avg_severity-c">Average CVSS score</button>
         </div>
     </div>
 </script>
 
 <script id="template-view-color-vul" type="text/template">
     <div class="dropdown">
-        <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="app-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-light dropdown-toggle select-color btn-sm btn-block" type="button" id="vul-color" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
              Color 
             </button>
         <div class="dropdown-menu color" aria-labelledby="vul-color">
             <h6 class="dropdown-header">Severity to Color</h6>
-            <button class="dropdown-item" type="button" id="vul-cvssScore-c">CVSS score</button>
+            <button class="dropdown-item [score]" type="button" id="vul-cvssScore-c">CVSS score</button>
             <hr class="dropdown-divider">
             <h6 class="dropdown-header">Other Metrics</h6>
-            <button class="dropdown-item" type="button" id="vul-meta_affected_apps-o">Affected Libraries</button>
+            <button class="dropdown-item [affected apps]" type="button" id="vul-meta_affected_apps-o">Affected Libraries</button>
         </div>
     </div>
 </script>
@@ -256,7 +256,8 @@
 </script>
 
 <script id="template-intersection-toggle" type="text/template">
-   <p class="intersect label" > Intersection Highlighting: the selected view highligths all artifacts inside the other views which are contained in all selected artifacts. </p>
+   <p class="intersect label" > Intersection Highlighting: 
+    highlight artifacts contained in every selection. </p>
     <div class="btn-group btn-group-toggle btn-block " data-toggle="buttons" id="intersection-toggle">
         <label class="btn btn-secondary btn-sm active" id="none-intersection">
           <input type="radio" name="options"  autocomplete="off" checked> None 

@@ -17,7 +17,6 @@ def init_app_model():
 @app_view_blueprint.route('/vis/app/clicked')
 def get_entity_infromation():
     gav = request.args.get('id')
-    print(gav)
     ret = get_connected_entities('app', gav)
     #ret_no_duplicates = {k:list(dict.fromkeys(valuesList)) for k, valuesList in ret.items() }
     return jsonify(ret)    
@@ -28,8 +27,6 @@ def get_entity_infromation():
 def order_apps():
     
     ordering = request.args.get('ordering')
-    print(ordering)
-    print('ORDERING')
     ret = reorder_entities('app', ordering, 'AUSFÜLLEN')
     return jsonify(ret)
 

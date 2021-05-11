@@ -17,8 +17,6 @@ def init_vul_model():
 def order_apps():
     
     ordering = request.args.get('ordering')
-    print(ordering)
-    print('ORDERING')
     ret = reorder_entities('vul', ordering, 'AUSFÜLLEN')
     return jsonify(ret)
 
@@ -26,7 +24,6 @@ def order_apps():
 @vul_view_blueprint.route('/vis/vul/clicked')
 def get_entity_infromation():
     cve = request.args.get('id')
-    print(cve)
     ret = get_connected_entities('vul', cve)
     #ret_no_duplicates = {k:list(dict.fromkeys(valuesList)) for k, valuesList in ret.items()}
     return jsonify(ret)   

@@ -87,8 +87,6 @@ def pickleMe():
                     }
                 )
 
-            #print(applications[i])
-
         else:
             print(f'statuscode 400 for {appID}')
 

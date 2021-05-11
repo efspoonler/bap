@@ -331,6 +331,11 @@ class ArtifactView extends EventEmitter {
       .on('click', (event) => {
         // id has the form <viewprefix-ordering-o>. Example: app-cves-o
         const [, selectedOrdering] = event.target.id.split('-'); // ignoring the first eleme in the split array.
+        const classes = d3.select(`#${event.target.id}`)
+          .attr('class');
+        const matches = classes.match(/\[(.*?)\]/)[1];
+        d3.select(`#${this._prefix}-orderings`)
+          .text(`Ordering:${matches}`);
         this.emit('newOrdering', [this._prefix, selectedOrdering]);
       });
 
@@ -340,6 +345,11 @@ class ArtifactView extends EventEmitter {
         // id has the form <viewprefix-ordering-o>. Example: app-cves-o
         const [, selectedColormapping] = event.target.id.split('-'); // ignoring the first eleme in the split array.
         this._controlStatus.color = selectedColormapping;
+        const classes = d3.select(`#${event.target.id}`)
+          .attr('class');
+        const matches = classes.match(/\[(.*?)\]/)[1];
+        d3.select(`#${this._prefix}-color`)
+          .text(`Color:${matches}`);
         this.emit('newColorMapping', [this._prefix, selectedColormapping]);
       });
 

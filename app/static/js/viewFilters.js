@@ -234,7 +234,7 @@ class ViewFilters extends EventEmitter {
 
     apply
       .html(
-        `<button id="rm-all-filters" class="btn btn-sm btn-outline-primary btn-block" type="submit">Reset filters - (keep selected artifacts)</button>
+        `<button id="rm-all-filters" class="btn btn-sm btn-outline-secondary btn-block" type="submit">Reset filters - (keep selected artifacts)</button>
 `,
       );
 
@@ -276,7 +276,7 @@ class ViewFilters extends EventEmitter {
     rangFilterDivRow
       .append('p')
       .attr('class', 'rangeSlider label')
-      .text('Range Slider: select an interval. Filter artifacts that solely contain vulnerabilitites in the intervall.');
+      .text('Range Slider: select an interval. Filter artifacts that solely contain vulnerabilities in the interval.');
     rangFilterDivRow
       .append('div')
       .attr('id', 'slider-range')
@@ -566,7 +566,7 @@ class ViewFilters extends EventEmitter {
       </button>`);
     apply
       .html(
-        `<button id="apply-vector-filter" class="btn btn-sm btn-outline-primary btn-block" type="submit">apply</button>
+        `<button id="apply-vector-filter" class="btn btn-sm btn-outline-secondary btn-block" type="submit">apply</button>
     `,
       );
 
