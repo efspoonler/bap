@@ -291,10 +291,11 @@ class ViewFilters extends EventEmitter {
       .tickFormat(d3.format('.2'))
       .ticks(5)
       .default([0, 10])
-      .fill('#2196f3')
+      .fill('gray')
       .on('end', (rangeArray) => {
         d3.select('p#value-range').text(rangeArray.map(d3.format('.2')).join('-'));
-        this.emit('rangeSliderChanged', rangeArray);
+        const rangeArrayFixed = [rangeArray[0].toFixed(1), rangeArray[1].toFixed(1)];
+        this.emit('rangeSliderChanged', rangeArrayFixed);
       });
 
     const gRange = d3

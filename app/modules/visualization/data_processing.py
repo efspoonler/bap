@@ -2,7 +2,7 @@ import pandas as pd
 from typing import TypeVar, List, Dict
 import numpy as np
 
-pandasDataFrame = TypeVar('pandas.core.frame.DataFrame')
+# pandasDataFrame = TypeVar('pandas.core.frame.DataFrame')
 global app_dataFrame, lib_dataFrame, vula_dataFrame
 
 
@@ -17,9 +17,9 @@ def load_pickle_files():
     libs_json: List = pd.read_pickle('./app/static/pickleFiles/visualization_libraries', compression='infer') # json
     vulas_json: List = pd.read_pickle('./app/static/pickleFiles/visualization_vulnerabilities', compression='infer') # json
     
-    app_df: pandasDataFrame = pd.json_normalize(apps_json, meta=['gav'])
-    lib_df: pandasDataFrame = pd.json_normalize(libs_json, meta=['gav'])
-    vula_df: pandasDataFrame = pd.json_normalize(vulas_json, meta=['gav'])
+    app_df: pd.DataFrame = pd.json_normalize(apps_json, meta=['gav'])
+    lib_df: pd.DataFrame = pd.json_normalize(libs_json, meta=['gav'])
+    vula_df: pd.DataFrame = pd.json_normalize(vulas_json, meta=['gav'])
 
     vula_df.replace('', 'null', inplace = True)
     
@@ -41,9 +41,9 @@ def load_pickle_files():
     lib_df.rename(columns = {'meta.numb_of_affected_apps':'meta_affected_apps', 'meta.numb_of_contained_vulnerabilities':'meta_vulas'}, inplace=True)
     vula_df.rename(columns = {'meta.numb_of_affected_libraries':'meta_affected_libs', 'meta.numb_of_affected_applications':'meta_affected_apps'},inplace=True)
     '''
-    apps_vul_libs_df: pandasDataFrame = pd.json_normalize(apps_json, record_path=['vulnerable_libraries'], meta=['gav'])
-    apps_containd_vul: pandasDataFrame = pd.json_normalize(apps_json, record_path='contained_vulnerabilities', meta=['gav'])
-    apps_info_df: pandasDataFrame = pd.json_normalize(apps_json, meta=['gav'])[['gav', 'meta.numb_of_vulnerabilities_in_app', 'meta.numb_of_vulnerable_libraries', 'meta.total_numb_of_libraries']] #, 'meta.numb_of_vulnerable_libraries', 'meta.numb_of_vulnerabilities_in_app']
+    apps_vul_libs_df: pd.DataFrame = pd.json_normalize(apps_json, record_path=['vulnerable_libraries'], meta=['gav'])
+    apps_containd_vul: pd.DataFrame = pd.json_normalize(apps_json, record_path='contained_vulnerabilities', meta=['gav'])
+    apps_info_df: pd.DataFrame = pd.json_normalize(apps_json, meta=['gav'])[['gav', 'meta.numb_of_vulnerabilities_in_app', 'meta.numb_of_vulnerable_libraries', 'meta.total_numb_of_libraries']] #, 'meta.numb_of_vulnerable_libraries', 'meta.numb_of_vulnerabilities_in_app']
 
     tes_df = apps_info_df.merge(apps_containd_vul, on='gav')
     test_2 = tes_df.merge(apps_vul_libs_df, on='gav') 
@@ -126,13 +126,13 @@ def init_vis(callingModel, load_pickle_files=False):
     return {'data': init_data, 'tooltip': init_tooltip} 
 
 def reorder_entities(viewId: str, current_data: List[str], orderBy: str) -> Dict: 
-   df:pandasDataFrame = get_data_frame(viewId)
+   df:pd.DataFrame = get_data_frame(viewId)
    df.sort_values(by='gav', inplace=True)
    df.rename(columns={ 'gav': 'id'}, inplace = True)
    return df.to_dict(orient='records')
 
 ''' return a deep copy of the respective dataframe '''
-def get_data_frame(viewId:str) -> pandasDataFrame:
+def get_data_frame(viewId:str) -> pd.DataFrame:
    global app_dataFrame, lib_dataFrame, vula_dataFrame
    if (viewId == 'app'):
       return app_dataFrame.copy(deep=True) 
@@ -148,8 +148,7 @@ def get_data_frame(viewId:str) -> pandasDataFrame:
 '''
 Calculates and adds the average severity of an lib and application. The avg value gets added to the Dataframe under meta.avg_severity.
 '''
-def calcAvgSeverity(df: pandasDataFrame, view:str):
-    print(df)
+def calcAvgSeverity(df: pd.DataFrame, view:str):
     avg_severity: List = []
     for indx, row in df.iterrows():
         
@@ -251,15 +250,15 @@ def severityFilterInit():
   return solution 
 
 # maybe useful.
-# def normalizeColumns(df: pandasDataFrame) -> pandasDataFrame:
-#     df_num: pandasDataFrame = df.select_dtypes(include=[np.number])
+# def normalizeColumns(df: pd.DataFrame) -> pd.DataFrame:
+#     df_num: pd.DataFrame = df.select_dtypes(include=[np.number])
 #     df_norm = (df_num - df_num.min()) / (df_num.max() - df_num.min())
 #     df[df_norm.columns] = df_norm
 #     return df
 
 
-# def normalizeColumnsLog(df: pandasDataFrame) -> pandasDataFrame:
-#     df_num: pandasDataFrame = df.select_dtypes(include=[np.number])
+# def normalizeColumnsLog(df: pd.DataFrame) -> pd.DataFrame:
+#     df_num: pd.DataFrame = df.select_dtypes(include=[np.number])
 #     df_norm = (np.log(df_num) -np.log(df_num.min())) / (np.log(df_num.max()) - np.log(df_num.min()))
 #     df[df_norm.columns] = df_norm
 #     return df

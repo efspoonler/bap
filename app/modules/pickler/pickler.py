@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify
 # keine dependencies: null
 pickler = Blueprint('pickle_blueprint', __name__)
 
-url = 'http://127.0.0.1:5000'
+url = 'http://127.0.0.1:5000' #root of the application
 path = "./app/static/pickleFiles/"
 
 
@@ -16,7 +16,11 @@ def pickleMe():
     Use this route to circumference the need of query optimization for long reuqests to Eclipse Steady database.
     The Class provides methods to dump data of long lasting queries into the static folder.
     Needs to be done manually every time the database is updated.
-    IMPORTANT: register the Blueprint inside app/__init__.py to use it.
+    IMPORTANT:
+     - register the Blueprint inside app/__init__.py to use it. 
+     - update the 'eclipseSteadyURL' and 'workspace' variables in api/routes.py
+     - the file: picklefile_all_apps_with_deps_and_vulndeps_new - must be renamed by hand into
+       picklefile_all_apps_with_deps_and_vulndeps (jsut remove the _new) 
     '''
 
     '''

@@ -176,8 +176,11 @@ needed to create new files after the db was updated.
 def send_data_for_visualization():
     global pickleData
     print("Start creating files filled with suitable data for the three main views")
-    print("comment out exit")
-    exit()
+    # '''
+    # To make it work just comment out the exit() function. Safty meachnismn
+    # '''
+    # print("comment out exit")
+    # exit()
     ret = data_for_vis.create_visualization_pickle_files()
 
     return jsonify(ret)
@@ -188,8 +191,12 @@ def send_data_for_visualization():
 def send_pickle_files():
     global pickleData
     print("creat app_forest based on 'picklefile_all_apps_with_deps_and_vulndeps'")
-    print("comment out exit")
-    exit()
+    
+    # '''
+    # To make it work just comment out the exit() function. Safty meachnismn
+    # '''
+    # print("comment out exit")
+    # exit()
     forest = app_forest.create_app_forest_pickle_file()
 
     return jsonify({'app_forest': forest})
