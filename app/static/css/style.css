@@ -107,3 +107,12 @@ p.label{
   /* prevents .active buttons to overlap the tooltip */
   z-index: auto !important;
 }
+
+
+
+text.label{
+  font-size: 12px !important; 
+  fill:  black;
+  color: black  !important ;
+  margin-bottom: 0 !important
+}

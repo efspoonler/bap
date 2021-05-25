@@ -12,7 +12,7 @@ import pickle
 from app.modules.panda import app_forest, data_for_vis
 import json
 
-eclipseSteadyURL = 'http://localhost:8033'
+eclipseSteadyURL = 'http://localhost:8033' #root domain of the eclipse steady instance.
 workspace = '46464E25761F99038CA2BCB9DD8187BE'
 
 api_blueprint = Blueprint('api_blueprint', __name__)
